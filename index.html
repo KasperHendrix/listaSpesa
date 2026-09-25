@@ -440,33 +440,56 @@
       background: #ffffff;
       border: 1px solid var(--border);
       border-radius: 12px;
-      padding: 14px;
-      margin-bottom: 18px;
+      padding: 16px;
+      margin-bottom: 20px;
     }
 
     .guide-step h3 {
       margin-top: 0;
       color: var(--primary);
-      font-size: 1.05rem;
-      display: flex;
-      align-items: center;
-      gap: 8px;
+      font-size: 1.1rem;
+      border-bottom: 2px solid #eff6ff;
+      padding-bottom: 8px;
     }
 
     .guide-step p {
       font-size: 0.88rem;
-      color: var(--secondary);
-      line-height: 1.45;
-      margin: 8px 0 12px 0;
+      color: var(--text);
+      line-height: 1.5;
+      margin: 8px 0;
     }
 
-    /* Mockup Container */
+    .guide-step ul {
+      margin: 8px 0 12px 16px;
+      padding: 0;
+      list-style-type: disc;
+    }
+
+    .guide-step li {
+      display: list-item;
+      padding: 2px 0;
+      border: none;
+      font-size: 0.85rem;
+      color: var(--secondary);
+    }
+
+    .guide-note {
+      background: #f0f9ff;
+      border-left: 4px solid var(--primary);
+      padding: 10px 12px;
+      border-radius: 4px;
+      font-size: 0.82rem;
+      color: #1e40af;
+      margin: 10px 0;
+    }
+
+    /* Mockup Container per la Guida */
     .mockup-frame {
       background: var(--bg);
       border: 1px solid var(--border);
       border-radius: 10px;
-      padding: 10px;
-      margin-top: 10px;
+      padding: 12px;
+      margin-top: 12px;
       box-shadow: inset 0 2px 4px rgba(0,0,0,0.03);
       font-size: 0.8rem;
       pointer-events: none;
@@ -474,21 +497,23 @@
 
     .mockup-header {
       font-weight: bold;
-      font-size: 0.75rem;
+      font-size: 0.72rem;
       color: var(--secondary);
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      margin-bottom: 8px;
+      margin-bottom: 10px;
       display: flex;
       align-items: center;
       justify-content: space-between;
     }
 
     .mockup-header span {
-      background: #e2e8f0;
+      background: #3b82f6;
+      color: white;
       padding: 2px 6px;
       border-radius: 4px;
       font-size: 0.65rem;
+      font-weight: 600;
     }
   </style>
 </head>
@@ -502,7 +527,7 @@
     <button class="tab-btn" onclick="switchTab('expiryTab', this)">Scadenze</button>
     <button class="tab-btn" onclick="switchTab('historyTab', this)">Storico</button>
     <button class="tab-btn" onclick="switchTab('settingsTab', this)">Impostazioni</button>
-    <button class="tab-btn" onclick="switchTab('guideTab', this)">Guida ❓</button>
+    <button class="tab-btn" onclick="switchTab('guideTab', this)">Guida</button>
   </div>
 
   <!-- TAB 1: LISTA DELLA SPESA -->
@@ -577,86 +602,206 @@
     </div>
   </div>
 
-  <!-- TAB 5: GUIDA ALL'USO -->
+  <!-- TAB 5: GUIDA ALL'USO COMPLETA -->
   <div id="guideTab" class="tab-content">
     <div style="text-align:center; margin-bottom: 16px;">
-      <h2 style="margin: 0; font-size: 1.2rem; color: var(--primary);">Come funziona l'App</h2>
-      <p style="font-size: 0.85rem; color: var(--secondary); margin-top: 4px;">Guida illustrata per sfruttare al meglio tutte le funzionalità.</p>
+      <h2 style="margin: 0; font-size: 1.25rem; color: var(--primary);">Guida Completa all'Uso</h2>
+      <p style="font-size: 0.85rem; color: var(--secondary); margin-top: 4px;">Manuale d'istruzioni dettagliato per gestire lista, scadenze e budget.</p>
     </div>
 
-    <!-- Step 1 -->
+    <!-- Sezione 1: Lista -->
     <div class="guide-step">
-      <h3>1. Gestione Lista Spesa</h3>
-      <p>Aggiungi gli articoli selezionando la categoria opportuna. Modifica le quantità con i tasti <b>+</b> e <b>-</b>, o spunta la casella quando hai messo il prodotto nel carrello.</p>
-      
+      <h3>1. Tab Lista della Spesa</h3>
+      <p>Questa è la schermata principale dell'applicazione. All'apertura iniziale la schermata risulta vuota perché non ci sono articoli precaricati. L'applicazione mostra solo le categorie che contengono al loro interno almeno un elemento inserito.</p>
+
+      <p><b>Come aggiungere un elemento:</b></p>
+      <ul>
+        <li>Scrivi il nome nell'input <i>"Elemento..."</i>.</li>
+        <li>Seleziona la categoria dal menu a tendina.</li>
+        <li>Premi il pulsante blu <b>"Aggiungi"</b>.</li>
+        <li>Se la categoria non esiste, usa il tasto <b>"+ Categoria"</b> per crearne una nuova al volo.</li>
+      </ul>
+
+      <p><b>Azioni sugli elementi della lista:</b></p>
+      <ul>
+        <li><b>Quantità:</b> Aumenta o diminuisci le unità da acquistare usando i tasti <b>+</b> e <b>-</b>.</li>
+        <li><b>Modifica (✏️):</b> Apre una finestra modale per modificare sia il nome dell'articolo che la sua categoria di appartenenza.</li>
+        <li><b>Elimina (&times;):</b> Rimuove definitivamente l'articolo dalla lista.</li>
+        <li><b>Checkbox:</b> Spunta la casella mentre fai la spesa: il testo verrà barrato per indicare che il prodotto è nel carrello.</li>
+        <li><b>Rimuovi acquistati:</b> In basso a destra, pulisce la lista rimuovendo soltanto gli articoli spuntati.</li>
+      </ul>
+
       <!-- Mockup Lista -->
       <div class="mockup-frame">
-        <div class="mockup-header">Interfaccia Lista <span>ANTEPRIMA</span></div>
-        <div style="background: white; padding: 8px; border-radius: 6px; border: 1px solid var(--border);">
-          <div class="category-title" style="margin:0 0 6px 0; font-size:0.75rem;">FRESCHI</div>
-          <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.85rem;">
-            <div style="display:flex; align-items:center; gap:6px;">
+        <div class="mockup-header">Schermata Lista <span>SCHERMATA REALE</span></div>
+        <div style="background:#f8fafc; padding:10px; border-radius:8px; border:1px solid var(--border); margin-bottom:10px;">
+          <div style="display:flex; gap:6px; margin-bottom:6px;">
+            <div style="flex:1; background:white; border:1px solid var(--border); padding:6px; border-radius:6px; font-size:0.75rem; color:#94a3b8;">Elemento...</div>
+            <div style="background:var(--primary); color:white; padding:6px 10px; border-radius:6px; font-weight:bold; font-size:0.75rem;">Aggiungi</div>
+          </div>
+          <div style="display:flex; gap:6px;">
+            <div style="flex:1; background:white; border:1px solid var(--border); padding:6px; border-radius:6px; font-size:0.75rem;">Ortofrutta</div>
+            <div style="background:#e2e8f0; padding:6px; border-radius:6px; font-size:0.75rem;">+ Categoria</div>
+          </div>
+        </div>
+
+        <div style="background: white; padding: 10px; border-radius: 8px; border: 1px solid var(--border);">
+          <div class="category-title" style="margin:0 0 6px 0; font-size:0.75rem;">ORTOFRUTTA</div>
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div style="display:flex; align-items:center; gap:8px;">
               <input type="checkbox" checked disabled>
-              <span class="completed">Latte Parzialmente Scremato</span>
+              <span class="completed" style="font-size:0.85rem;">Mele Fuji</span>
             </div>
-            <div class="qty-controls" style="padding:0 4px;">
-              <span class="qty-val">x2</span>
+            <div style="display:flex; align-items:center; gap:4px;">
+              <div class="qty-controls" style="padding:0 4px;">
+                <span class="qty-btn" style="padding:0 2px;">-</span>
+                <span class="qty-val" style="font-size:0.8rem;">2</span>
+                <span class="qty-btn" style="padding:0 2px;">+</span>
+              </div>
+              <span style="font-size:0.85rem;">✏️</span>
+              <span style="color:var(--accent); font-size:1rem; font-weight:bold;">&times;</span>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Step 2 -->
+    <!-- Sezione 2: Scadenze & Scanner -->
     <div class="guide-step">
-      <h3>2. Monitoraggio Scadenze & Scanner</h3>
-      <p>Scansiona il codice a barre tramite fotocamera (il sistema recupererà automaticamente il nome) oppure inseriscilo manualmente. La scheda evidenzierà con colori d'avviso i prodotti in scadenza imminente.</p>
-      
+      <h3>2. Tab Scadenze & Scanner Barcode</h3>
+      <p>In questa schermata puoi monitorare lo stato di conservazione dei prodotti presenti nella tua dispensa o nel frigorifero.</p>
+
+      <p><b>Aggiungere un prodotto tramite Scanner:</b></p>
+      <ul>
+        <li>Premi il pulsante viola <b>"📷 Scansiona Codice a Barre"</b> ed autorizza l'accesso alla fotocamera.</li>
+        <li>Inquadra il codice a barre sulla confezione del prodotto.</li>
+        <li>L'app interrogherà il database online <i>Open Food Facts</i> per recuperare automaticamente il nome del prodotto.</li>
+      </ul>
+
+      <div class="guide-note">
+        <b>⚠️ Nota Importante sulla Data di Scadenza:</b> Il codice a barre (EAN) identifica solo il tipo di prodotto, non la specifica data di scadenza della confezione. Pertanto, sia tramite scanner che tramite inserimento manuale (tasto <b>"+ Manuale"</b>), <b>la data di scadenza deve essere inserita o confermata a mano</b> nell'apposito campo del modulo.
+      </div>
+
+      <p><b>Indicatori visivi dello stato di scadenza:</b></p>
+      <ul>
+        <li><span class="badge badge-expired">SCADUTO</span> o <span class="badge badge-expired">Scade OGGI</span>: Bordo ed evidenziazione rossi.</li>
+        <li><span class="badge badge-urgent">Scade tra X gg!</span> (3 giorni o meno): Bordo ed evidenziazione arancioni.</li>
+        <li><span class="badge badge-warning">Scade tra X gg</span> (da 4 a 7 giorni): Bordo ed evidenziazione gialli.</li>
+        <li><span class="badge badge-safe">Scade tra X gg</span> (oltre 7 giorni): Bordo verde.</li>
+      </ul>
+
+      <p><b>Funzione "🛒 +Lista":</b> Premendo questo pulsante sulla scheda del prodotto in scadenza, l'articolo viene inviato immediatamente alla tab <b>Lista</b> con la relativa quantità, facilitando il riacquisto rapido.</p>
+
       <!-- Mockup Scadenze -->
       <div class="mockup-frame">
-        <div class="mockup-header">Scheda Scadenza <span>ANTEPRIMA</span></div>
-        <div class="expiry-card urgent" style="margin-bottom:0; padding:8px;">
+        <div class="mockup-header">Scheda Prodotto Dispensa <span>SCHERMATA REALE</span></div>
+        <div class="expiry-card urgent" style="margin-bottom:0; padding:10px;">
           <div class="expiry-info">
-            <h4 style="font-size:0.85rem; margin:0;">Yogurt Greco</h4>
+            <h4 style="font-size:0.85rem; margin:0;">Yogurt Greco 0%</h4>
             <div class="expiry-date-tag" style="font-size:0.75rem;">Scadenza: 28/09/2026</div>
             <span class="badge badge-urgent" style="font-size:0.65rem;">Scade tra 2 gg!</span>
           </div>
-          <button class="btn-secondary" style="padding:2px 6px; font-size:0.7rem;">🛒 +Lista</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Step 3 -->
-    <div class="guide-step">
-      <h3>3. Chiusura Spesa e Storico</h3>
-      <p>Quando hai finito di fare la spesa, premi <b>"Chiudi spesa"</b>. Gli elementi acquistati verranno salvati nello Storico con l'importo totale speso, consentendoti di analizzare le spese nel tempo.</p>
-      
-      <!-- Mockup Storico -->
-      <div class="mockup-frame">
-        <div class="mockup-header">Storico Spesa <span>ANTEPRIMA</span></div>
-        <div class="history-card" style="margin-bottom:0; padding:8px;">
-          <div style="display:flex; justify-content:space-between; font-size:0.85rem;">
-            <div>
-              <strong>42.50 €</strong>
-              <div style="font-size:0.7rem; color:var(--secondary);">25/09/2026 18:30</div>
+          <div style="display:flex; flex-direction:column; align-items:flex-end; gap:6px;">
+            <div class="qty-controls" style="padding:0 2px;">
+              <span class="qty-btn" style="padding:0 2px;">-</span>
+              <span class="qty-val" style="font-size:0.75rem;">1</span>
+              <span class="qty-btn" style="padding:0 2px;">+</span>
             </div>
-            <span style="font-size:0.75rem; color:var(--primary);">▼ Dettagli (3 articoli)</span>
+            <div style="display:flex; gap:4px; align-items:center;">
+              <span style="background:#f1f5f9; border:1px solid var(--border); padding:2px 6px; border-radius:6px; font-size:0.7rem; font-weight:bold;">🛒 +Lista</span>
+              <span style="color:var(--accent); font-size:1rem; font-weight:bold;">&times;</span>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Step 4 -->
+    <!-- Sezione 3: Chiudi Spesa e Storico -->
     <div class="guide-step">
-      <h3>4. Personalizzazione e Backup</h3>
-      <p>Nella tab <b>Impostazioni</b> puoi aprire la fisarmonica <b>Gestione Categorie</b> per rinominare o eliminare le categorie, oppure usare i tasti <b>Backup</b> per scaricare o ricaricare i tuoi dati in formato JSON.</p>
+      <h3>3. Chiudi Spesa e Tab Storico</h3>
+      <p>Quando ti trovi al supermercato ed hai terminato gli acquisti, puoi contabilizzare la spesa effettuata e registrare la spesa nel tuo archivio storico.</p>
+
+      <p><b>Procedura di Chiusura Spesa:</b></p>
+      <ul>
+        <li>Assicurati di aver spuntato (checkbox) tutti gli elementi messi nel carrello.</li>
+        <li>Premi il pulsante verde in fondo alla pagina <b>"🛒 Chiudi spesa"</b>.</li>
+        <li>Si aprirà una modale dove inserire l'importo totale dello scontrino in Euro (es. <code>42.50</code>).</li>
+        <li>Facendo clic su <b>"Conferma e Chiudi"</b>, l'app eseguirà due azioni automatiche:
+          <ol style="margin:4px 0 0 12px; padding:0; font-size:0.82rem; color:var(--secondary);">
+            <li>Toglierà la spunta di completamento da tutti gli elementi della lista.</li>
+            <li>Salverà la transazione nella tab <b>Storico</b> memorizzando data, ora, importo e l'elenco dei prodotti acquistati.</li>
+          </ol>
+        </li>
+      </ul>
+
+      <p><b>Come funziona il Totale Speso nello Storico:</b></p>
+      <ul>
+        <li>In cima alla tab Storico trovi il box <b>Totale Speso Storico</b>. Questo valore rappresenta la <b>somma algebrica di tutte le spese registrate</b> nel tempo.</li>
+        <li>Ogni volta che chiudi una nuova spesa, il nuovo importo viene sommato automaticamente al totale generale.</li>
+        <li>Se elimini una singola scheda spesa dallo storico (tramite il tasto rosso <b>&times;</b>), l'importo relativo verrà sottratto automaticamente dal Totale Speso.</li>
+        <li>Cliccando su una scheda nello storico, la fisarmonica si espanderà mostrando la lista dettagliata dei prodotti acquistati in quella sessione.</li>
+      </ul>
+
+      <!-- Mockup Storico -->
+      <div class="mockup-frame">
+        <div class="mockup-header">Scheda Storico Espansa <span>SCHERMATA REALE</span></div>
+        <div class="history-summary" style="padding:8px; margin-bottom:8px;">
+          <div style="font-size:0.65rem; color:var(--secondary); text-transform:uppercase;">Totale Speso Storico</div>
+          <div class="total-amount" style="font-size:1.2rem;">128.40 €</div>
+        </div>
+        <div class="history-card" style="margin-bottom:0; padding:8px;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <div style="font-weight:bold; font-size:0.9rem;">42.50 €</div>
+              <div style="font-size:0.7rem; color:var(--secondary);">25/09/2026 18:30</div>
+            </div>
+            <div style="display:flex; align-items:center; gap:6px;">
+              <span style="font-size:0.75rem; color:var(--secondary);">▲</span>
+              <span style="color:var(--accent); font-size:1rem; font-weight:bold;">&times;</span>
+            </div>
+          </div>
+          <div style="margin-top:6px; padding-top:6px; border-top:1px dashed var(--border); font-size:0.75rem; color:var(--secondary);">
+            <strong>Prodotti acquistati:</strong>
+            <div style="margin-top:2px;">• Mele Fuji (x2)</div>
+            <div>• Latte Parzialmente Scremato (x1)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sezione 4: Impostazioni & Backup -->
+    <div class="guide-step">
+      <h3>4. Tab Impostazioni & Backup Dati</h3>
+      <p>In questa tab puoi personalizzare la struttura delle categorie e mettere al sicuro tutti i tuoi dati salvati sul dispositivo.</p>
+
+      <p><b>Gestione Categorie:</b></p>
+      <ul>
+        <li>Clicca sul blocco <b>"⚙️ Gestione Categorie"</b> per aprire il pannello fisarmonica.</li>
+        <li>Usa l'icona matita (✏️) per rinominare una categoria esistente. Tutte le voci attualmente associate in lista si aggiorneranno automaticamente alla nuova denominazione.</li>
+        <li>Usa l'icona elimina (&times;) per rimuovere una categoria. Gli elementi associati non andranno persi ma verranno spostati nella categoria generica <i>"Altro"</i>.</li>
+        <li>Il pulsante <b>"Ripristina categorie predefinite"</b> riporta l'elenco alle categorie originali dell'app.</li>
+      </ul>
+
+      <p><b>Backup & Ripristino Dati (JSON):</b></p>
+      <ul>
+        <li><b>Esporta Dati (JSON):</b> Genera e scarica sul tuo telefono o computer un file di backup (<code>backup_spesa_scadenze.json</code>) contenente tutti i tuoi dati: lista della spesa, articoli in scadenza, storico acquisti e categorie personalizzate.</li>
+        <li><b>Importa Dati (JSON):</b> Ti permette di caricare un file di backup precedentemente salvato. Utilissimo per trasferire i dati da un telefono all'altro o per ripristinare le informazioni.</li>
+      </ul>
 
       <!-- Mockup Impostazioni -->
       <div class="mockup-frame">
-        <div class="mockup-header">Impostazioni & Categorie <span>ANTEPRIMA</span></div>
-        <div style="background:white; padding:8px; border-radius:6px; border:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
-          <span>⚙️ Gestione Categorie</span>
-          <span style="font-size:0.75rem; color:var(--secondary);">▲ Attiva</span>
+        <div class="mockup-header">Pannello Impostazioni <span>SCHERMATA REALE</span></div>
+        <div style="background:#f8fafc; border:1px solid var(--border); border-radius:8px; padding:8px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; font-weight:bold; font-size:0.8rem;">
+            <span>⚙️ Gestione Categorie</span>
+            <span style="font-size:0.7rem; color:var(--secondary);">▲</span>
+          </div>
+          <div style="margin-top:8px; padding-top:6px; border-top:1px dashed var(--border);">
+            <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.75rem; padding:2px 0;">
+              <span>Ortofrutta</span>
+              <div><span>✏️</span> <span style="color:var(--accent); font-weight:bold;">&times;</span></div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
