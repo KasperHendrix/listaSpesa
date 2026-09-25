@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Lista Spesa & Scadenze</title>
+  <title>Lista della Spesa</title>
 
   <!-- HTML5 QR Code / Barcode Scanner Library -->
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
@@ -106,11 +106,18 @@
       font-size: 0.95rem;
       outline: none;
       background-color: #fff;
+      box-sizing: border-box;
     }
 
-    .input-item-text { flex: 1; }
-    .qty-input-main { width: 55px; text-align: center; }
-    .select-category { flex: 1; }
+    .input-item-text { 
+      flex: 1; 
+      width: 100%;
+    }
+
+    .select-category { 
+      flex: 1; 
+      width: 100%;
+    }
 
     .btn {
       background-color: var(--primary);
@@ -160,6 +167,7 @@
       font-weight: 600;
       cursor: pointer;
       font-size: 0.85rem;
+      white-space: nowrap;
     }
 
     .btn-success {
@@ -172,7 +180,7 @@
       cursor: pointer;
       width: 100%;
       font-size: 1rem;
-      margin-top: 12px;
+      margin-top: 16px;
     }
 
     .category-title {
@@ -302,7 +310,42 @@
     .badge-warning { background: #fef9c3; color: #854d0e; }
     .badge-safe { background: #dcfce7; color: #166534; }
 
-    /* Settings & History */
+    /* Storico Card Espandibile */
+    .history-card {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+
+    .history-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+    }
+
+    .history-details {
+      display: none;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px dashed var(--border);
+      font-size: 0.85rem;
+      color: var(--secondary);
+    }
+
+    .history-details ul {
+      margin-top: 6px;
+    }
+
+    .history-details li {
+      padding: 4px 0;
+      border: none;
+      font-size: 0.85rem;
+    }
+
     .history-summary {
       background: #f8fafc;
       border: 1px solid var(--border);
@@ -370,12 +413,12 @@
 <body>
 
 <div class="container">
-  <h1>Lista Spesa & Scadenze</h1>
+  <h1>Lista della Spesa</h1>
 
   <div class="nav-tabs">
     <button class="tab-btn active" onclick="switchTab('listTab', this)">Lista</button>
     <button class="tab-btn" onclick="switchTab('expiryTab', this)">Scadenze</button>
-    <button class="tab-btn" onclick="switchTab('historyTab', this)">Storico</button>
+    <button class="tab-btn" onclick="switchTab('historyTab', this)">Storico spese</button>
     <button class="tab-btn" onclick="switchTab('settingsTab', this)">Impostazioni</button>
   </div>
 
@@ -384,7 +427,6 @@
     <div class="input-section">
       <div class="input-row">
         <input type="text" id="newItem" class="input-item-text" placeholder="Elemento..." onkeypress="handleKey(event)">
-        <input type="number" id="newQty" class="qty-input-main" value="1" min="1" onkeypress="handleKey(event)">
         <button class="btn" onclick="addItem()">Aggiungi</button>
       </div>
       <div class="input-row">
@@ -395,7 +437,7 @@
 
     <div id="shoppingList"></div>
 
-    <button class="btn-success" onclick="openCheckoutModal()">Concludi Spesa (Inserisci Prezzo)</button>
+    <button class="btn-success" onclick="openCheckoutModal()">🛒 Chiudi spesa</button>
 
     <div style="margin-top: 16px; text-align: right;">
       <button class="btn-secondary" style="color: var(--accent);" onclick="clearCompleted()">Rimuovi acquistati</button>
@@ -466,15 +508,15 @@
   </div>
 </div>
 
-<!-- Modal Concludi Spesa -->
+<!-- Modal Chiudi Spesa -->
 <div id="checkoutModal" class="modal">
   <div class="modal-content">
-    <h3>Concludi Spesa</h3>
-    <p style="font-size: 0.85rem; color: var(--secondary);">Inserisci l'importo speso. Gli elementi spuntati verranno archiviati.</p>
+    <h3>Chiudi Spesa</h3>
+    <p style="font-size: 0.85rem; color: var(--secondary);">Inserisci l'importo totale. Gli elementi acquistati verranno deselezionati e salvati nello Storico spese.</p>
     <input type="number" id="expenseAmount" step="0.01" placeholder="Importo in € (es. 45.50)">
     <div class="modal-actions">
       <button class="btn-secondary" onclick="closeModal('checkoutModal')">Annulla</button>
-      <button class="btn" onclick="saveExpense()">Salva Spesa</button>
+      <button class="btn" onclick="confirmCheckout()">Conferma e Chiudi</button>
     </div>
   </div>
 </div>
@@ -548,15 +590,13 @@
   // --- GESTIONE LISTA SPESA ---
   function addItem(name = null, qtyVal = 1) {
     const input = document.getElementById('newItem');
-    const qtyInput = document.getElementById('newQty');
     const categorySelect = document.getElementById('categorySelect');
 
     const text = name || input.value.trim();
-    const qty = name ? qtyVal : (parseInt(qtyInput.value) || 1);
 
     if (text) {
-      items.push({ text: text, quantity: qty, category: categorySelect.value || 'Altro', completed: false });
-      if (!name) { input.value = ''; qtyInput.value = '1'; }
+      items.push({ text: text, quantity: qtyVal, category: categorySelect.value || 'Altro', completed: false });
+      if (!name) { input.value = ''; }
       saveData();
       if (name) alert(`"${text}" aggiunto alla Lista Spesa!`);
     }
@@ -599,7 +639,6 @@
 
   function onScanSuccess(decodedText) {
     stopScanner();
-    // Interroga Open Food Facts
     fetch(`https://world.openfoodfacts.org/api/v2/product/${decodedText}.json`)
       .then(res => res.json())
       .then(data => {
@@ -614,13 +653,10 @@
       });
   }
 
-  function openManualExpiryModal() {
-    openExpiryModalWithData("");
-  }
+  function openManualExpiryModal() { openExpiryModalWithData(""); }
 
   function openExpiryModalWithData(name = "") {
     document.getElementById('expiryItemName').value = name;
-    // Imposta la data di default a oggi + 3 giorni
     const future = new Date();
     future.setDate(future.getDate() + 3);
     document.getElementById('expiryItemDate').value = future.toISOString().split('T')[0];
@@ -642,10 +678,7 @@
     }
   }
 
-  function deleteExpiryItem(index) {
-    expiryItems.splice(index, 1);
-    saveData();
-  }
+  function deleteExpiryItem(index) { expiryItems.splice(index, 1); saveData(); }
 
   function changeExpiryQty(index, delta) {
     expiryItems[index].qty = (expiryItems[index].qty || 1) + delta;
@@ -653,22 +686,52 @@
     saveData();
   }
 
-  // --- STORICO & CHECKOUT ---
+  // --- CHIUDI SPESA & STORICO ---
   function openCheckoutModal() {
+    const purchased = items.filter(i => i.completed);
+    if (purchased.length === 0) {
+      alert("Seleziona prima gli elementi che hai acquistato spuntandoli dalla lista.");
+      return;
+    }
     document.getElementById('expenseAmount').value = '';
     document.getElementById('checkoutModal').style.display = 'flex';
   }
 
-  function saveExpense() {
+  function confirmCheckout() {
     const amount = parseFloat(document.getElementById('expenseAmount').value);
-    if (!isNaN(amount) && amount >= 0) {
-      const now = new Date();
-      const dateStr = now.toLocaleDateString('it-IT') + ' ' + now.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
-      history.unshift({ date: dateStr, amount: amount });
-      items = items.filter(i => !i.completed);
-      closeModal('checkoutModal');
-      saveData();
-      switchTab('historyTab', document.querySelectorAll('.tab-btn')[2]);
+    if (isNaN(amount) || amount < 0) {
+      alert("Inserisci un importo valido.");
+      return;
+    }
+
+    const purchasedItems = items.filter(i => i.completed).map(i => ({ text: i.text, qty: i.quantity || 1 }));
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('it-IT') + ' ' + now.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+
+    // 1. Popola lo storico spese con la card dettagliata
+    history.unshift({
+      date: dateStr,
+      amount: amount,
+      purchasedItems: purchasedItems
+    });
+
+    // 2. Deseleziona tutti gli elementi in lista
+    items.forEach(i => i.completed = false);
+
+    closeModal('checkoutModal');
+    saveData();
+    switchTab('historyTab', document.querySelectorAll('.tab-btn')[2]);
+  }
+
+  function toggleHistoryDetail(index) {
+    const detailDiv = document.getElementById(`history-detail-${index}`);
+    const arrow = document.getElementById(`history-arrow-${index}`);
+    if (detailDiv.style.display === 'block') {
+      detailDiv.style.display = 'none';
+      arrow.innerText = '▼';
+    } else {
+      detailDiv.style.display = 'block';
+      arrow.innerText = '▲';
     }
   }
 
@@ -778,14 +841,13 @@
       container.appendChild(ul);
     });
 
-    // 2. Render Scadenze (Ordinamento Automatico per Data)
+    // 2. Render Scadenze
     const expiryContainer = document.getElementById('expiryList');
     expiryContainer.innerHTML = '';
 
     const today = new Date();
     today.setHours(0,0,0,0);
 
-    // Ordina array scadenze per data crescente
     expiryItems.sort((a, b) => new Date(a.date) - new Date(b.date));
 
     if (expiryItems.length === 0) {
@@ -838,23 +900,40 @@
       expiryContainer.appendChild(card);
     });
 
-    // 3. Render Storico
+    // 3. Render Storico spese (Card Espandibili)
     const historyContainer = document.getElementById('historyList');
     historyContainer.innerHTML = '';
     let total = 0;
+
     history.forEach((h, index) => {
       total += h.amount;
-      const hDiv = document.createElement('div');
-      hDiv.className = 'history-item';
-      hDiv.style.cssText = 'display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid var(--border);';
-      hDiv.innerHTML = `
-        <div>
-          <div style="font-weight:bold; font-size:1.05rem;">${h.amount.toFixed(2)} €</div>
-          <div style="font-size:0.85rem; color:var(--secondary);">${h.date}</div>
+      const card = document.createElement('div');
+      card.className = 'history-card';
+
+      let itemsHtml = '';
+      if (h.purchasedItems && h.purchasedItems.length > 0) {
+        itemsHtml = '<ul>' + h.purchasedItems.map(pi => `<li>• ${pi.text} (x${pi.qty})</li>`).join('') + '</ul>';
+      } else {
+        itemsHtml = '<em>Nessun dettaglio prodotti salvato per questa spesa.</em>';
+      }
+
+      card.innerHTML = `
+        <div class="history-header" onclick="toggleHistoryDetail(${index})">
+          <div>
+            <div style="font-weight:bold; font-size:1.1rem; color:var(--text);">${h.amount.toFixed(2)} €</div>
+            <div style="font-size:0.8rem; color:var(--secondary);">${h.date}</div>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span id="history-arrow-${index}" style="font-size:0.8rem; color:var(--secondary);">▼</span>
+            <button class="icon-btn delete-btn" onclick="event.stopPropagation(); deleteHistoryItem(${index})">&times;</button>
+          </div>
         </div>
-        <button class="icon-btn delete-btn" onclick="deleteHistoryItem(${index})">&times;</button>
+        <div class="history-details" id="history-detail-${index}">
+          <strong>Prodotti acquistati:</strong>
+          ${itemsHtml}
+        </div>
       `;
-      historyContainer.appendChild(hDiv);
+      historyContainer.appendChild(card);
     });
     document.getElementById('totalSpent').innerText = total.toFixed(2) + ' €';
   }
