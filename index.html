@@ -53,20 +53,22 @@
       display: flex;
       border-bottom: 2px solid var(--border);
       margin-bottom: 16px;
+      overflow-x: auto;
     }
 
     .tab-btn {
       flex: 1;
-      padding: 10px 2px;
+      padding: 10px 4px;
       text-align: center;
       background: none;
       border: none;
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       font-weight: 600;
       color: var(--secondary);
       cursor: pointer;
       border-bottom: 3px solid transparent;
       margin-bottom: -2px;
+      white-space: nowrap;
     }
 
     .tab-btn.active {
@@ -193,7 +195,7 @@
       font-size: 0.85rem;
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      color: var(--primary);
+      color: var(--secondary);
       margin: 18px 0 8px 0;
       font-weight: 700;
     }
@@ -432,6 +434,62 @@
     }
 
     .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
+
+    /* GUIDA TAB STYLES & MOCKUPS */
+    .guide-step {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 18px;
+    }
+
+    .guide-step h3 {
+      margin-top: 0;
+      color: var(--primary);
+      font-size: 1.05rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .guide-step p {
+      font-size: 0.88rem;
+      color: var(--secondary);
+      line-height: 1.45;
+      margin: 8px 0 12px 0;
+    }
+
+    /* Mockup Container */
+    .mockup-frame {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px;
+      margin-top: 10px;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.03);
+      font-size: 0.8rem;
+      pointer-events: none;
+    }
+
+    .mockup-header {
+      font-weight: bold;
+      font-size: 0.75rem;
+      color: var(--secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .mockup-header span {
+      background: #e2e8f0;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.65rem;
+    }
   </style>
 </head>
 <body>
@@ -442,8 +500,9 @@
   <div class="nav-tabs">
     <button class="tab-btn active" onclick="switchTab('listTab', this)">Lista</button>
     <button class="tab-btn" onclick="switchTab('expiryTab', this)">Scadenze</button>
-    <button class="tab-btn" onclick="switchTab('historyTab', this)">Storico spese</button>
+    <button class="tab-btn" onclick="switchTab('historyTab', this)">Storico</button>
     <button class="tab-btn" onclick="switchTab('settingsTab', this)">Impostazioni</button>
+    <button class="tab-btn" onclick="switchTab('guideTab', this)">Guida ❓</button>
   </div>
 
   <!-- TAB 1: LISTA DELLA SPESA -->
@@ -514,6 +573,91 @@
         <button class="btn-secondary" onclick="exportData()">💾 Esporta Dati (JSON)</button>
         <button class="btn-secondary" onclick="importData()">📂 Importa Dati (JSON)</button>
         <input type="file" id="importFileInput" style="display:none" accept=".json" onchange="handleFileImport(event)">
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 5: GUIDA ALL'USO -->
+  <div id="guideTab" class="tab-content">
+    <div style="text-align:center; margin-bottom: 16px;">
+      <h2 style="margin: 0; font-size: 1.2rem; color: var(--primary);">Come funziona l'App</h2>
+      <p style="font-size: 0.85rem; color: var(--secondary); margin-top: 4px;">Guida illustrata per sfruttare al meglio tutte le funzionalità.</p>
+    </div>
+
+    <!-- Step 1 -->
+    <div class="guide-step">
+      <h3>1. Gestione Lista Spesa</h3>
+      <p>Aggiungi gli articoli selezionando la categoria opportuna. Modifica le quantità con i tasti <b>+</b> e <b>-</b>, o spunta la casella quando hai messo il prodotto nel carrello.</p>
+      
+      <!-- Mockup Lista -->
+      <div class="mockup-frame">
+        <div class="mockup-header">Interfaccia Lista <span>ANTEPRIMA</span></div>
+        <div style="background: white; padding: 8px; border-radius: 6px; border: 1px solid var(--border);">
+          <div class="category-title" style="margin:0 0 6px 0; font-size:0.75rem;">FRESCHI</div>
+          <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.85rem;">
+            <div style="display:flex; align-items:center; gap:6px;">
+              <input type="checkbox" checked disabled>
+              <span class="completed">Latte Parzialmente Scremato</span>
+            </div>
+            <div class="qty-controls" style="padding:0 4px;">
+              <span class="qty-val">x2</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 2 -->
+    <div class="guide-step">
+      <h3>2. Monitoraggio Scadenze & Scanner</h3>
+      <p>Scansiona il codice a barre tramite fotocamera (il sistema recupererà automaticamente il nome) oppure inseriscilo manualmente. La scheda evidenzierà con colori d'avviso i prodotti in scadenza imminente.</p>
+      
+      <!-- Mockup Scadenze -->
+      <div class="mockup-frame">
+        <div class="mockup-header">Scheda Scadenza <span>ANTEPRIMA</span></div>
+        <div class="expiry-card urgent" style="margin-bottom:0; padding:8px;">
+          <div class="expiry-info">
+            <h4 style="font-size:0.85rem; margin:0;">Yogurt Greco</h4>
+            <div class="expiry-date-tag" style="font-size:0.75rem;">Scadenza: 28/09/2026</div>
+            <span class="badge badge-urgent" style="font-size:0.65rem;">Scade tra 2 gg!</span>
+          </div>
+          <button class="btn-secondary" style="padding:2px 6px; font-size:0.7rem;">🛒 +Lista</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 3 -->
+    <div class="guide-step">
+      <h3>3. Chiusura Spesa e Storico</h3>
+      <p>Quando hai finito di fare la spesa, premi <b>"Chiudi spesa"</b>. Gli elementi acquistati verranno salvati nello Storico con l'importo totale speso, consentendoti di analizzare le spese nel tempo.</p>
+      
+      <!-- Mockup Storico -->
+      <div class="mockup-frame">
+        <div class="mockup-header">Storico Spesa <span>ANTEPRIMA</span></div>
+        <div class="history-card" style="margin-bottom:0; padding:8px;">
+          <div style="display:flex; justify-content:space-between; font-size:0.85rem;">
+            <div>
+              <strong>42.50 €</strong>
+              <div style="font-size:0.7rem; color:var(--secondary);">25/09/2026 18:30</div>
+            </div>
+            <span style="font-size:0.75rem; color:var(--primary);">▼ Dettagli (3 articoli)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 4 -->
+    <div class="guide-step">
+      <h3>4. Personalizzazione e Backup</h3>
+      <p>Nella tab <b>Impostazioni</b> puoi aprire la fisarmonica <b>Gestione Categorie</b> per rinominare o eliminare le categorie, oppure usare i tasti <b>Backup</b> per scaricare o ricaricare i tuoi dati in formato JSON.</p>
+
+      <!-- Mockup Impostazioni -->
+      <div class="mockup-frame">
+        <div class="mockup-header">Impostazioni & Categorie <span>ANTEPRIMA</span></div>
+        <div style="background:white; padding:8px; border-radius:6px; border:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+          <span>⚙️ Gestione Categorie</span>
+          <span style="font-size:0.75rem; color:var(--secondary);">▲ Attiva</span>
+        </div>
       </div>
     </div>
   </div>
