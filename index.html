@@ -123,12 +123,15 @@
       background-color: var(--primary);
       color: white;
       border: none;
-      padding: 10px 14px;
+      padding: 10px 8px;
       border-radius: 8px;
       font-weight: bold;
       cursor: pointer;
       font-size: 0.95rem;
       white-space: nowrap;
+      width: 110px;
+      box-sizing: border-box;
+      text-align: center;
     }
 
     .btn-secondary {
@@ -162,12 +165,15 @@
       background-color: #e2e8f0;
       color: var(--text);
       border: 1px solid var(--border);
-      padding: 10px 12px;
+      padding: 10px 8px;
       border-radius: 8px;
       font-weight: 600;
       cursor: pointer;
       font-size: 0.85rem;
       white-space: nowrap;
+      width: 110px;
+      box-sizing: border-box;
+      text-align: center;
     }
 
     .btn-success {
@@ -336,15 +342,8 @@
       color: var(--secondary);
     }
 
-    .history-details ul {
-      margin-top: 6px;
-    }
-
-    .history-details li {
-      padding: 4px 0;
-      border: none;
-      font-size: 0.85rem;
-    }
+    .history-details ul { margin-top: 6px; }
+    .history-details li { padding: 4px 0; border: none; font-size: 0.85rem; }
 
     .history-summary {
       background: #f8fafc;
@@ -367,6 +366,11 @@
       border-radius: 12px;
       padding: 16px;
       margin-bottom: 16px;
+    }
+
+    /* Modifica Categorie List */
+    .cat-settings-list li {
+      padding: 8px 0;
     }
 
     /* Scanner View Container */
@@ -401,13 +405,14 @@
     }
 
     .modal-content h3 { margin-top: 0; }
+    .modal-content label { display: block; margin-top: 8px; }
     .modal-content select, .modal-content input {
       width: 100%;
       box-sizing: border-box;
       margin-bottom: 12px;
     }
 
-    .modal-actions { display: flex; justify-content: flex-end; gap: 8px; }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
   </style>
 </head>
 <body>
@@ -431,7 +436,7 @@
       </div>
       <div class="input-row">
         <select id="categorySelect" class="select-category"></select>
-        <button class="btn-add-cat" onclick="openAddCategoryModal()">+ Cat</button>
+        <button class="btn-add-cat" onclick="openAddCategoryModal()">+ Categoria</button>
       </div>
     </div>
 
@@ -472,6 +477,13 @@
   <!-- TAB 4: IMPOSTAZIONI & BACKUP -->
   <div id="settingsTab" class="tab-content">
     <div class="settings-card">
+      <h3>⚙️ Gestione Categorie</h3>
+      <p style="font-size:0.85rem; color: var(--secondary); margin-bottom: 12px;">Rinomina o elimina le categorie esistenti.</p>
+      <ul id="settingsCategoriesList" class="cat-settings-list"></ul>
+      <button class="btn-secondary" style="margin-top:12px; width:100%;" onclick="resetCategories()">Ripristina categorie predefinite</button>
+    </div>
+
+    <div class="settings-card">
       <h3>💾 Backup & Ripristino Dati</h3>
       <p style="font-size:0.85rem; color: var(--secondary);">Esporta o importa tutti i tuoi dati (lista, scadenze, storico e categorie).</p>
       <div style="display:flex; flex-direction:column; gap:8px;">
@@ -480,10 +492,46 @@
         <input type="file" id="importFileInput" style="display:none" accept=".json" onchange="handleFileImport(event)">
       </div>
     </div>
+  </div>
+</div>
 
-    <div class="settings-card">
-      <h3>⚙️ Categorie</h3>
-      <button class="btn-secondary" onclick="resetCategories()">Ripristina categorie predefinite</button>
+<!-- Modal Modifica Elemento (Nome + Categoria) -->
+<div id="editItemModal" class="modal">
+  <div class="modal-content">
+    <h3>Modifica Elemento</h3>
+    <label style="font-size:0.8rem; color:var(--secondary);">Nome</label>
+    <input type="text" id="modalItemName">
+    
+    <label style="font-size:0.8rem; color:var(--secondary);">Categoria</label>
+    <select id="modalItemCategorySelect"></select>
+
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal('editItemModal')">Annulla</button>
+      <button class="btn" onclick="saveItemChanges()">Salva</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Rinomina Categoria -->
+<div id="renameCategoryModal" class="modal">
+  <div class="modal-content">
+    <h3>Rinomina Categoria</h3>
+    <input type="text" id="renameCategoryInput">
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal('renameCategoryModal')">Annulla</button>
+      <button class="btn" onclick="saveRenamedCategory()">Salva</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Nuova Categoria -->
+<div id="addCategoryModal" class="modal">
+  <div class="modal-content">
+    <h3>Nuova Categoria</h3>
+    <input type="text" id="newCategoryInput" placeholder="Nome Categoria">
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal('addCategoryModal')">Annulla</button>
+      <button class="btn" onclick="addNewCategory()">Crea</button>
     </div>
   </div>
 </div>
@@ -521,30 +569,6 @@
   </div>
 </div>
 
-<!-- Modal Cambia Categoria -->
-<div id="editCategoryModal" class="modal">
-  <div class="modal-content">
-    <h3>Sposta Categoria</h3>
-    <select id="modalCategorySelect"></select>
-    <div class="modal-actions">
-      <button class="btn-secondary" onclick="closeModal('editCategoryModal')">Annulla</button>
-      <button class="btn" onclick="saveNewCategoryForItem()">Salva</button>
-    </div>
-  </div>
-</div>
-
-<!-- Modal Nuova Categoria -->
-<div id="addCategoryModal" class="modal">
-  <div class="modal-content">
-    <h3>Nuova Categoria</h3>
-    <input type="text" id="newCategoryInput" placeholder="Nome Categoria">
-    <div class="modal-actions">
-      <button class="btn-secondary" onclick="closeModal('addCategoryModal')">Annulla</button>
-      <button class="btn" onclick="addNewCategory()">Crea</button>
-    </div>
-  </div>
-</div>
-
 <script>
   const defaultCategories = ['Ortofrutta', 'Freschi', 'Pasta & Dispensa', 'Bevande', 'Igiene & Casa', 'Altro', 'Carni rosse', 'Carni bianche', 'Pesce'];
 
@@ -555,6 +579,7 @@
 
   let html5QrcodeScanner = null;
   let currentEditingIndex = null;
+  let currentEditingCategoryIndex = null;
 
   function saveData() {
     localStorage.setItem('shoppingList', JSON.stringify(items));
@@ -578,7 +603,7 @@
 
   function renderCategoryDropdowns() {
     const mainSelect = document.getElementById('categorySelect');
-    const modalSelect = document.getElementById('modalCategorySelect');
+    const modalSelect = document.getElementById('modalItemCategorySelect');
     mainSelect.innerHTML = ''; modalSelect.innerHTML = '';
 
     categories.forEach(cat => {
@@ -612,6 +637,82 @@
   function deleteItem(index) { items.splice(index, 1); saveData(); }
   function clearCompleted() { items = items.filter(i => !i.completed); saveData(); }
   function handleKey(e) { if (e.key === 'Enter') addItem(); }
+
+  function openEditModal(index) {
+    currentEditingIndex = index;
+    document.getElementById('modalItemName').value = items[index].text;
+    document.getElementById('modalItemCategorySelect').value = items[index].category;
+    document.getElementById('editItemModal').style.display = 'flex';
+  }
+
+  function saveItemChanges() {
+    if (currentEditingIndex !== null) {
+      const newName = document.getElementById('modalItemName').value.trim();
+      const newCat = document.getElementById('modalItemCategorySelect').value;
+      if (newName) {
+        items[currentEditingIndex].text = newName;
+        items[currentEditingIndex].category = newCat;
+        closeModal('editItemModal');
+        saveData();
+      }
+    }
+  }
+
+  // --- GESTIONE CATEGORIE ---
+  function openAddCategoryModal() {
+    document.getElementById('newCategoryInput').value = '';
+    document.getElementById('addCategoryModal').style.display = 'flex';
+  }
+
+  function addNewCategory() {
+    const cat = document.getElementById('newCategoryInput').value.trim();
+    if (cat && !categories.includes(cat)) {
+      categories.push(cat); 
+      saveData();
+      document.getElementById('categorySelect').value = cat;
+      closeModal('addCategoryModal');
+    }
+  }
+
+  function openRenameCategoryModal(index) {
+    currentEditingCategoryIndex = index;
+    document.getElementById('renameCategoryInput').value = categories[index];
+    document.getElementById('renameCategoryModal').style.display = 'flex';
+  }
+
+  function saveRenamedCategory() {
+    if (currentEditingCategoryIndex !== null) {
+      const oldCat = categories[currentEditingCategoryIndex];
+      const newCat = document.getElementById('renameCategoryInput').value.trim();
+      if (newCat && newCat !== oldCat) {
+        categories[currentEditingCategoryIndex] = newCat;
+        items.forEach(i => { if (i.category === oldCat) i.category = newCat; });
+        closeModal('renameCategoryModal');
+        saveData();
+      }
+    }
+  }
+
+  function deleteCategory(index) {
+    const catToDelete = categories[index];
+    if (categories.length <= 1) {
+      alert("Devi mantenere almeno una categoria.");
+      return;
+    }
+    if (confirm(`Sei sicuro di voler eliminare "${catToDelete}"? Gli elementi associati verranno spostati in "Altro".`)) {
+      categories.splice(index, 1);
+      if (!categories.includes('Altro')) categories.push('Altro');
+      items.forEach(i => { if (i.category === catToDelete) i.category = 'Altro'; });
+      saveData();
+    }
+  }
+
+  function resetCategories() {
+    if (confirm("Ripristinare le categorie predefinite?")) { 
+      categories = [...defaultCategories]; 
+      saveData(); 
+    }
+  }
 
   // --- GESTIONE SCADENZE & SCANNER ---
   function startScanner() {
@@ -708,14 +809,12 @@
     const now = new Date();
     const dateStr = now.toLocaleDateString('it-IT') + ' ' + now.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
 
-    // 1. Popola lo storico spese con la card dettagliata
     history.unshift({
       date: dateStr,
       amount: amount,
       purchasedItems: purchasedItems
     });
 
-    // 2. Deseleziona tutti gli elementi in lista
     items.forEach(i => i.completed = false);
 
     closeModal('checkoutModal');
@@ -768,39 +867,6 @@
     reader.readAsText(file);
   }
 
-  // --- MODALI ACCESSORIE ---
-  function openEditModal(index) {
-    currentEditingIndex = index;
-    document.getElementById('modalCategorySelect').value = items[index].category;
-    document.getElementById('editCategoryModal').style.display = 'flex';
-  }
-
-  function saveNewCategoryForItem() {
-    if (currentEditingIndex !== null) {
-      items[currentEditingIndex].category = document.getElementById('modalCategorySelect').value;
-      closeModal('editCategoryModal');
-      saveData();
-    }
-  }
-
-  function openAddCategoryModal() {
-    document.getElementById('newCategoryInput').value = '';
-    document.getElementById('addCategoryModal').style.display = 'flex';
-  }
-
-  function addNewCategory() {
-    const cat = document.getElementById('newCategoryInput').value.trim();
-    if (cat && !categories.includes(cat)) {
-      categories.push(cat); saveData(); renderCategoryDropdowns();
-      document.getElementById('categorySelect').value = cat;
-      closeModal('addCategoryModal');
-    }
-  }
-
-  function resetCategories() {
-    if (confirm("Ripristinare le categorie predefinite?")) { categories = [...defaultCategories]; saveData(); }
-  }
-
   function closeModal(modalId) { document.getElementById(modalId).style.display = 'none'; }
 
   // --- RENDER GENERALE ---
@@ -832,7 +898,7 @@
               <span class="qty-val">${item.quantity || 1}</span>
               <button class="qty-btn" onclick="changeQty(${gIdx}, 1)">+</button>
             </div>
-            <button class="icon-btn edit-btn" onclick="openEditModal(${gIdx})">✏️</button>
+            <button class="icon-btn edit-btn" onclick="openEditModal(${gIdx})" title="Modifica">✏️</button>
             <button class="icon-btn delete-btn" onclick="deleteItem(${gIdx})">&times;</button>
           </div>
         `;
@@ -900,7 +966,7 @@
       expiryContainer.appendChild(card);
     });
 
-    // 3. Render Storico spese (Card Espandibili)
+    // 3. Render Storico spese
     const historyContainer = document.getElementById('historyList');
     historyContainer.innerHTML = '';
     let total = 0;
@@ -936,6 +1002,21 @@
       historyContainer.appendChild(card);
     });
     document.getElementById('totalSpent').innerText = total.toFixed(2) + ' €';
+
+    // 4. Render Categorie nelle Impostazioni
+    const catSettingsContainer = document.getElementById('settingsCategoriesList');
+    catSettingsContainer.innerHTML = '';
+    categories.forEach((cat, idx) => {
+      const li = document.createElement('li');
+      li.innerHTML = `
+        <span>${cat}</span>
+        <div class="item-actions">
+          <button class="icon-btn edit-btn" onclick="openRenameCategoryModal(${idx})">✏️</button>
+          <button class="icon-btn delete-btn" onclick="deleteCategory(${idx})">&times;</button>
+        </div>
+      `;
+      catSettingsContainer.appendChild(li);
+    });
   }
 
   render();
