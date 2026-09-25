@@ -368,6 +368,25 @@
       margin-bottom: 16px;
     }
 
+    .settings-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .settings-header h3 {
+      margin: 0;
+    }
+
+    .settings-content {
+      display: none;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px dashed var(--border);
+    }
+
     /* Modifica Categorie List */
     .cat-settings-list li {
       padding: 8px 0;
@@ -477,10 +496,15 @@
   <!-- TAB 4: IMPOSTAZIONI & BACKUP -->
   <div id="settingsTab" class="tab-content">
     <div class="settings-card">
-      <h3>⚙️ Gestione Categorie</h3>
-      <p style="font-size:0.85rem; color: var(--secondary); margin-bottom: 12px;">Rinomina o elimina le categorie esistenti.</p>
-      <ul id="settingsCategoriesList" class="cat-settings-list"></ul>
-      <button class="btn-secondary" style="margin-top:12px; width:100%;" onclick="resetCategories()">Ripristina categorie predefinite</button>
+      <div class="settings-header" onclick="toggleCategoriesSection()">
+        <h3>⚙️ Gestione Categorie</h3>
+        <span id="categories-arrow" style="font-size:0.8rem; color:var(--secondary);">▼</span>
+      </div>
+      <div class="settings-content" id="categoriesSectionContent">
+        <p style="font-size:0.85rem; color: var(--secondary); margin-bottom: 12px;">Rinomina o elimina le categorie esistenti.</p>
+        <ul id="settingsCategoriesList" class="cat-settings-list"></ul>
+        <button class="btn-secondary" style="margin-top:12px; width:100%;" onclick="resetCategories()">Ripristina categorie predefinite</button>
+      </div>
     </div>
 
     <div class="settings-card">
@@ -659,6 +683,18 @@
   }
 
   // --- GESTIONE CATEGORIE ---
+  function toggleCategoriesSection() {
+    const content = document.getElementById('categoriesSectionContent');
+    const arrow = document.getElementById('categories-arrow');
+    if (content.style.display === 'block') {
+      content.style.display = 'none';
+      arrow.innerText = '▼';
+    } else {
+      content.style.display = 'block';
+      arrow.innerText = '▲';
+    }
+  }
+
   function openAddCategoryModal() {
     document.getElementById('newCategoryInput').value = '';
     document.getElementById('addCategoryModal').style.display = 'flex';
