@@ -179,16 +179,21 @@
     }
 
     .btn-success {
-      background-color: var(--success);
+      background-color: #059669;
       color: white;
       border: none;
-      padding: 12px 16px;
-      border-radius: 8px;
+      padding: 14px 16px;
+      border-radius: 10px;
       font-weight: bold;
       cursor: pointer;
       width: 100%;
-      font-size: 1rem;
+      font-size: 1.05rem;
       margin-top: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 2px 6px rgba(5, 150, 105, 0.2);
     }
 
     .category-title {
@@ -545,11 +550,7 @@
 
     <div id="shoppingList"></div>
 
-    <button class="btn-success" onclick="openCheckoutModal()">🛒 Chiudi spesa</button>
-
-    <div style="margin-top: 16px; text-align: right;">
-      <button class="btn-secondary" style="color: var(--accent);" onclick="clearCompleted()">Rimuovi acquistati</button>
-    </div>
+    <button class="btn-success" onclick="openCheckoutModal()">💵 Chiudi spesa</button>
   </div>
 
   <!-- TAB 2: SCADENZE & SCANNER -->
@@ -628,7 +629,6 @@
         <li><b>Modifica (✏️):</b> Apre una finestra modale per modificare sia il nome dell'articolo che la sua categoria di appartenenza.</li>
         <li><b>Elimina (&times;):</b> Rimuove definitivamente l'articolo dalla lista.</li>
         <li><b>Checkbox:</b> Spunta la casella mentre fai la spesa: il testo verrà barrato per indicare che il prodotto è nel carrello.</li>
-        <li><b>Rimuovi acquistati:</b> In basso a destra, pulisce la lista rimuovendo soltanto gli articoli spuntati.</li>
       </ul>
 
       <!-- Mockup Lista -->
@@ -724,7 +724,7 @@
       <p><b>Procedura di Chiusura Spesa:</b></p>
       <ul>
         <li>Assicurati di aver spuntato (checkbox) tutti gli elementi messi nel carrello.</li>
-        <li>Premi il pulsante verde in fondo alla pagina <b>"🛒 Chiudi spesa"</b>.</li>
+        <li>Premi il pulsante verde in fondo alla pagina <b>"💵 Chiudi spesa"</b>.</li>
         <li>Si aprirà una modale dove inserire l'importo totale dello scontrino in Euro (es. <code>42.50</code>).</li>
         <li>Facendo clic su <b>"Conferma e Chiudi"</b>, l'app eseguirà due azioni automatiche:
           <ol style="margin:4px 0 0 12px; padding:0; font-size:0.82rem; color:var(--secondary);">
@@ -948,7 +948,6 @@
 
   function toggleItem(index) { items[index].completed = !items[index].completed; saveData(); }
   function deleteItem(index) { items.splice(index, 1); saveData(); }
-  function clearCompleted() { items = items.filter(i => !i.completed); saveData(); }
   function handleKey(e) { if (e.key === 'Enter') addItem(); }
 
   function openEditModal(index) {
