@@ -1103,7 +1103,7 @@
     switchTab('historyTab', document.querySelectorAll('.tab-btn')[3]);
   }
 
-  // --- STORICO SPESE FIXED (NON IMPLODIBILE) ---
+  // --- STORICO SPESE CON ACCORDION RIPRISTINATO ---
   function renderHistory() {
     const container = document.getElementById('historyList');
     container.innerHTML = '';
@@ -1111,28 +1111,33 @@
 
     historyList.forEach(h => {
       grandTotal += h.amount;
-      const card = document.createElement('div');
-      card.className = 'history-card';
+      const acc = document.createElement('div');
+      acc.className = 'accordion-item';
 
       let itemsSummary = h.items ? h.items.map(i => `• ${i.name} (x${i.qty})`).join('<br>') : 'Nessun dettaglio';
 
-      card.innerHTML = `
-        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-          <div>
-            <span class="badge badge-store">${h.store || 'Supermercato'}</span>
-            <div style="font-weight:800; font-size:1.15rem; margin-top:2px;">${h.amount.toFixed(2)} €</div>
-            <div style="font-size:0.75rem; color:var(--secondary);">${h.date}</div>
+      acc.innerHTML = `
+        <div class="accordion-header" onclick="toggleAccordionContent(this)">
+          <div style="display:flex; flex-direction:column; gap:2px;">
+            <div>
+              <span class="badge badge-store">${h.store || 'Supermercato'}</span>
+              <strong style="margin-left:6px; color:var(--text);">${h.amount.toFixed(2)} €</strong>
+            </div>
+            <span style="font-size:0.75rem; color:var(--secondary); font-weight:normal;">${h.date}</span>
           </div>
-          <div style="display:flex; gap:4px;">
-            <button class="icon-btn" title="Modifica Spesa" onclick="openEditHistoryModal(${h.id})">✏️</button>
-            <button class="icon-btn delete-btn" title="Elimina Spesa" onclick="deleteHistoryItem(${h.id})">&times;</button>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <button class="icon-btn" title="Modifica Spesa" onclick="event.stopPropagation(); openEditHistoryModal(${h.id})">✏️</button>
+            <button class="icon-btn delete-btn" title="Elimina Spesa" onclick="event.stopPropagation(); deleteHistoryItem(${h.id})">&times;</button>
+            <span style="font-size:0.8rem; margin-left:4px;">▲</span>
           </div>
         </div>
-        <div style="margin-top:10px; padding-top:8px; border-top:1px dashed var(--border); font-size:0.8rem; color:var(--secondary); line-height:1.4;">
-          ${itemsSummary}
+        <div class="accordion-content">
+          <div style="padding-top:8px; border-top:1px dashed var(--border); font-size:0.8rem; color:var(--secondary); line-height:1.4;">
+            ${itemsSummary}
+          </div>
         </div>
       `;
-      container.appendChild(card);
+      container.appendChild(acc);
     });
 
     document.getElementById('totalSpent').innerText = grandTotal.toFixed(2) + ' €';
