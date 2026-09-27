@@ -148,7 +148,7 @@
       cursor: pointer;
     }
 
-    /* CONTROLLI INPUT ED ELEMENTI */
+    /* CONTROLLI INPUT E PRODOTTI */
     .input-box-row {
       display: flex;
       gap: 6px;
@@ -336,16 +336,17 @@
     .badge-safe { background: #dcfce7; color: #166534; }
     .badge-store { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
 
-    /* STORICO CARD */
+    /* STORICO CARD FIXED */
     .history-card {
       background: #ffffff;
       border: 1px solid var(--border);
       border-radius: 10px;
-      padding: 12px;
-      margin-bottom: 10px;
+      padding: 14px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.03);
     }
 
-    /* MODAL */
+    /* MODAL GENERALI */
     .modal {
       display: none;
       position: fixed;
@@ -371,24 +372,49 @@
     .modal-content select, .modal-content input { width: 100%; margin-top: 4px; }
     .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
 
-    /* GUIDA STYLES */
+    /* MODAL DI LOADING OCR */
+    .loading-dialog-content {
+      background: white;
+      padding: 24px 20px;
+      border-radius: 16px;
+      width: 100%;
+      max-width: 320px;
+      text-align: center;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+    }
+    .loading-spinner {
+      font-size: 2.8rem;
+      margin-bottom: 12px;
+      display: inline-block;
+      animation: pulse 1.2s infinite ease-in-out;
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); opacity: 0.8; }
+      50% { transform: scale(1.15); opacity: 1; }
+      100% { transform: scale(1); opacity: 0.8; }
+    }
+
+    /* GUIDA STYLES ESTESA */
     .guide-step {
       background: #ffffff;
       border: 1px solid var(--border);
       border-radius: 10px;
-      padding: 12px;
-      margin-bottom: 14px;
+      padding: 14px;
+      margin-bottom: 16px;
     }
-    .guide-step h3 { margin-top: 0; color: var(--primary); font-size: 0.98rem; }
-    .guide-step p { font-size: 0.85rem; color: var(--secondary); line-height: 1.45; margin: 6px 0 10px 0; }
+    .guide-step h3 { margin-top: 0; color: var(--primary); font-size: 1rem; }
+    .guide-step p { font-size: 0.86rem; color: var(--secondary); line-height: 1.5; margin: 8px 0 10px 0; }
+    .guide-step ol { padding-left: 20px; font-size: 0.85rem; color: var(--text); line-height: 1.5; margin: 6px 0; }
+    .guide-step li { margin-bottom: 6px; }
     .mockup-frame {
       background: var(--bg);
       border: 1px solid var(--border);
       border-radius: 8px;
-      padding: 8px;
-      font-size: 0.78rem;
+      padding: 10px;
+      font-size: 0.8rem;
+      margin-top: 8px;
     }
-    .mockup-header { font-weight: 700; color: var(--secondary); font-size: 0.7rem; margin-bottom: 6px; text-transform: uppercase; }
+    .mockup-header { font-weight: 700; color: var(--secondary); font-size: 0.72rem; margin-bottom: 6px; text-transform: uppercase; }
   </style>
 </head>
 <body>
@@ -438,7 +464,7 @@
       </div>
 
       <div class="input-box-row">
-        <input type="text" id="newBoxItemText" placeholder="Nuovo elemento non in catalogo..." style="flex:1; min-width:140px;">
+        <input type="text" id="newBoxItemText" placeholder="Nuovo prodotto non in catalogo..." style="flex:1; min-width:140px;">
         <select id="newBoxSubCategorySelect" style="flex:1; min-width:120px;"></select>
         <button class="btn" onclick="addNewItemToCatalog()">+ Aggiungi</button>
       </div>
@@ -447,9 +473,9 @@
     </div>
   </div>
 
-  <!-- TAB 2: LISTA SPESA (SOLA CONSULTAZIONE A FISARMONICA) -->
+  <!-- TAB 2: LISTA SPESA -->
   <div id="listTab" class="tab-content">
-    <p style="font-size:0.85rem; color:var(--secondary); margin-top:0;">Spunta gli articoli mentre sei al supermercato. Espandi o comprimi le categorie per scorrere agevolmente.</p>
+    <p style="font-size:0.85rem; color:var(--secondary); margin-top:0;">Spunta i prodotti mentre sei al supermercato. Espandi o comprimi le categorie per scorrere agevolmente.</p>
     
     <div id="activeShoppingList"></div>
 
@@ -466,7 +492,6 @@
       <button class="btn" style="width:100%; background:#4f46e5;" onclick="document.getElementById('ocrCameraInput').click()">
         📸 Scatta Foto alla Scadenza
       </button>
-      <div id="ocrStatus" style="font-size:0.78rem; color:var(--secondary); text-align:center; margin-top:6px;"></div>
     </div>
 
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
@@ -504,19 +529,27 @@
     </div>
   </div>
 
-  <!-- TAB 6: GUIDA E ISTRUZIONI -->
+  <!-- TAB 6: GUIDA E ISTRUZIONI COMPLETA PER UTENTI -->
   <div id="guideTab" class="tab-content">
-    <h2 style="font-size:1.1rem; color:var(--primary); margin-top:0; text-align:center;">Guida & Funzionamento App</h2>
+    <h2 style="font-size:1.15rem; color:var(--primary); margin-top:0; text-align:center;">Guida Completa all'Uso dell'App</h2>
+    <p style="font-size:0.85rem; color:var(--secondary); text-align:center; margin-top:-6px; margin-bottom:14px;">Istruzioni passo-passo per gestire la spesa e la dispensa senza complicazioni.</p>
 
     <div class="guide-step">
-      <h3>1. Come creare una Lista Spesa</h3>
-      <p>Entra in uno dei 4 Macro-Box (<i>Alimenti, Detersivi, Igiene, Casa</i>). Seleziona la quantità con i tasti <b>+</b> / <b>-</b> e premi <b>"Metti nel carrello"</b> per inviare il prodotto alla spesa attiva. Se un elemento non è presente in catalogo, puoi aggiungerlo al volo col campo in alto. Al primo avvio la spesa attiva è vuota finché non invii i prodotti dai box.</p>
+      <h3>1. Come preparare la Lista Spesa</h3>
+      <p>Quando apri l'applicazione, trovi 4 grandi reparti (<b>Alimenti</b>, <b>Detersivi</b>, <b>Igiene</b>, <b>Casa</b>):</p>
+      <ol>
+        <li>Tocca il reparto che ti interessa (es. 🍎 <i>Alimenti</i>).</li>
+        <li>Sfoglia i prodotti suddivisi per categoria (es. <i>Freschi</i>, <i>Ortofrutta</i>).</li>
+        <li>Scegli la quantità desiderata usando i pulsanti <b>+</b> e <b>-</b>.</li>
+        <li>Premi il pulsante blu <b>"+ Metti nel carrello"</b> per inserire il prodotto nella lista. Il pulsante diventerà verde (<b>✓ In Lista</b>).</li>
+        <li>Se un prodotto non è presente nel catalogo, inserisci il nome nel campo in alto e premi <b>"+ Aggiungi"</b>.</li>
+      </ol>
       <div class="mockup-frame">
-        <div class="mockup-header">Anteprima Catalogo Box</div>
-        <div style="display:flex; justify-content:space-between; align-items:center; background:white; padding:6px; border-radius:6px; border:1px solid var(--border);">
-          <span style="font-weight:600;">Pane Integrale</span>
+        <div class="mockup-header">Esempio Prodotto nel Catalogo</div>
+        <div style="display:flex; justify-content:space-between; align-items:center; background:white; padding:6px 8px; border-radius:6px; border:1px solid var(--border);">
+          <span style="font-weight:600;">Latte Parzialmente Scremato</span>
           <div style="display:flex; align-items:center; gap:6px;">
-            <span style="background:#f1f5f9; padding:2px 6px; border-radius:4px; font-weight:700;">x1</span>
+            <span style="background:#f1f5f9; padding:2px 6px; border-radius:4px; font-weight:700;">x2</span>
             <span class="btn-add-cart added" style="padding:4px 6px;">✓ In Lista</span>
           </div>
         </div>
@@ -524,56 +557,76 @@
     </div>
 
     <div class="guide-step">
-      <h3>2. Consultazione Lista Spesa</h3>
-      <p>Nella tab <b>Lista Spesa</b> trovi solo ed esclusivamente gli articoli inviati dai Macro-Box per la spesa corrente. La lista è organizzata a fisarmonica (accordion): puoi aprire o chiudere ogni sotto-categoria toccando l'intestazione, riducendo lo scorrimento e focalizzandoti solo sul reparto in cui ti trovi al supermercato.</p>
+      <h3>2. Consultazione e Spunta al Supermercato</h3>
+      <p>Quando vai a fare la spesa, passa alla scheda <b>Lista Spesa</b> in alto:</p>
+      <ol>
+        <li>Qui vedrai solo ed esclusivamente i prodotti che hai scelto di acquistare.</li>
+        <li>Mentre metti i prodotti nel carrello reale, tocca la casella accanto al nome per spuntarli. Il nome verrà barrato.</li>
+        <li>Puoi aprire o chiudere le categorie toccando la freccia ▲/▼ per occupare meno spazio sullo schermo.</li>
+      </ol>
       <div class="mockup-frame">
-        <div class="mockup-header">Anteprima Lista Fisarmonica</div>
-        <div style="background:white; border:1px solid var(--border); border-radius:6px; padding:6px;">
-          <div style="display:flex; justify-content:space-between; font-weight:700;">
-            <span>Freschi (1)</span> <span>▲</span>
-          </div>
-          <div style="padding-top:4px; font-size:0.8rem; display:flex; justify-content:space-between; align-items:center;">
+        <div class="mockup-header">Esempio Prodotto Spuntato</div>
+        <div style="background:white; border:1px solid var(--border); border-radius:6px; padding:6px 8px;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
             <div>
-              <input type="checkbox" checked> <span style="text-decoration:line-through;">Latte Scremato</span>
+              <input type="checkbox" checked> <span style="text-decoration:line-through; color:var(--secondary);">Pane Integrale</span>
             </div>
-            <span style="background:#e2e8f0; padding:1px 4px; border-radius:4px; font-weight:700; font-size:0.75rem;">x2</span>
+            <span style="background:#e2e8f0; padding:1px 5px; border-radius:4px; font-weight:700; font-size:0.75rem;">x1</span>
           </div>
         </div>
       </div>
     </div>
 
     <div class="guide-step">
-      <h3>3. Chiusura Spesa, Supermercato e Storico</h3>
-      <p>Quando hai terminato gli acquisti, premi il tasto <b>"Chiudi spesa"</b> 🧾. Inserisci l'importo totale pagato e seleziona il <b>Supermercato</b> dal menu precompilato. Gli importi si sommeranno cumulativamente nella tab <b>Storico</b>, dove ogni card mostrerà il badge del punto vendita, la data, l'ora e il dettaglio degli articoli acquistati.</p>
-      <div class="mockup-frame">
-        <div class="mockup-header">Anteprima Card Storico</div>
-        <div style="background:white; border:1px solid var(--border); border-radius:6px; padding:6px;">
-          <span class="badge badge-store" style="font-size:0.68rem;">Esselunga</span>
-          <div style="font-weight:800; font-size:1rem; margin-top:2px;">42.50 €</div>
-          <div style="font-size:0.7rem; color:var(--secondary);">27/09/2026 15:30</div>
-        </div>
-      </div>
+      <h3>3. Chiusura Spesa e Scelta Supermercato</h3>
+      <p>Quando sei alle casse e hai terminato gli acquisti:</p>
+      <ol>
+        <li>Premi il pulsante verde <b>"🧾 Chiudi spesa"</b> in fondo alla lista.</li>
+        <li>Inserisci l'importo totale dello scontrino (es. <i>34.50</i>).</li>
+        <li>Seleziona dal menu il supermercato dove ti trovi (es. <i>Esselunga, Conad, Lidl</i>).</li>
+        <li><b>Controllo Prodotti Mancanti:</b> Se ti sei dimenticato di spuntare dei prodotti o se non li hai trovati in corsia, l'app ti mostrerà un avviso di sicurezza: <i>"ATTENZIONE: non hai preso tutti i prodotti della lista, sei sicuro di voler chiudere la spesa?"</i>.</li>
+        <li>Confermando la chiusura, la lista della spesa attiva si svuoterà e il totale verrà registrato nello <b>Storico</b>.</li>
+      </ol>
     </div>
 
     <div class="guide-step">
-      <h3>4. Gestione Scadenze</h3>
-      <p>Usa la fotocamera per scattare una foto alla data di scadenza del prodotto. L'OCR analizzerà l'immagine e proverà ad estrarre la data automaticamente. Verifica e conferma sempre la data prima di salvare il prodotto in dispensa. Puoi anche inserire i prodotti manualmente o trasferirli in automatico durante la chiusura spesa.</p>
-      <div class="mockup-frame">
-        <div class="mockup-header">Anteprima Card Scadenza</div>
-        <div class="expiry-card urgent" style="margin-bottom:0; padding:6px;">
-          <div>
-            <h4 style="margin:0; font-size:0.85rem;">Yogurt Greco</h4>
-            <div style="font-size:0.7rem; color:var(--secondary);">Freschi - Scad: 30/09/2026</div>
-            <span class="badge badge-urgent" style="font-size:0.65rem;">Scade tra 3 gg!</span>
-          </div>
-        </div>
-      </div>
+      <h3>4. Consultazione e Modifica dello Storico</h3>
+      <p>Nella scheda <b>Storico</b> trovi il riepilogo di tutte le spese effettuate nel tempo:</p>
+      <ol>
+        <li>Ogni scheda mostra chiaramente il supermercato, la data, l'ora, l'importo e l'elenco completo dei prodotti acquistati.</li>
+        <li>Tutte le schede dello storico sono sempre aperte e visibili senza doverle cliccare.</li>
+        <li>Se hai dimenticato di selezionare il supermercato o vuoi correggere l'importo di una spesa passata, premi l'icona della matita ✏️ per modificare i dati al volo.</li>
+      </ol>
     </div>
 
     <div class="guide-step">
-      <h3>5. Personalizzazione Categorie e Backup</h3>
-      <p>Nella tab <b>Impostazioni</b> puoi gestire la struttura gerarchica aggiungendo o rimuovendo sotto-categorie per ogni Macro-Box. Inoltre, puoi esportare o importare il tuo file di backup in formato JSON per conservare o trasferire tutti i tuoi dati.</p>
+      <h3>5. Gestione Scadenze e Dispensa</h3>
+      <p>Per tenere sotto controllo i prodotti in frigorifero o in dispensa:</p>
+      <ol>
+        <li>Tocca la scheda <b>Scadenze</b>.</li>
+        <li>Premi <b>"📸 Scatta Foto alla Scadenza"</b> per inquadrare con la fotocamera la data stampata sulla confezione. Durante l'elaborazione apparirà un avviso a schermo intero (<b>"🔍 Analisi OCR in corso..."</b>).</li>
+        <li>Se la data non viene letta perfettamente, puoi inserire o modificare il prodotto manualmente premendo <b>"+ Manuale"</b>.</li>
+        <li>I prodotti vengono evidenziati in arancione se scadono a breve o in rosso se sono già scaduti.</li>
+      </ol>
     </div>
+
+    <div class="guide-step">
+      <h3>6. Personalizzazione e Salvataggio Dati (Backup)</h3>
+      <p>Nella scheda <b>Impostazioni</b> puoi organizzare l'applicazione come preferisci:</p>
+      <ol>
+        <li>Puoi aggiungere o rimuovere le sotto-categorie per ogni reparto.</li>
+        <li>Premendo <b>"💾 Esporta Backup JSON"</b> puoi scaricare un file di sicurezza (`backup_mammadispensa.json`) con tutti i tuoi prodotti e storici per non perderli mai.</li>
+      </ol>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DI LOADING OCR -->
+<div id="ocrLoadingModal" class="modal">
+  <div class="loading-dialog-content">
+    <div class="loading-spinner">🔍</div>
+    <h3 style="margin:0 0 6px 0; font-size:1.15rem; color:var(--primary);">Analisi OCR in corso...</h3>
+    <p style="margin:0; font-size:0.85rem; color:var(--secondary); line-height:1.4;">Stiamo leggendo la data di scadenza dalla foto.<br>Attendere qualche secondo senza chiudere la pagina.</p>
   </div>
 </div>
 
@@ -825,7 +878,6 @@
 
       let itemsHtml = '';
       itemsArr.forEach(itemName => {
-        // Matching robusto e insensibile al maiuscolo/minuscolo
         const cartItem = activeCart.find(c => 
           c.name.trim().toLowerCase() === itemName.trim().toLowerCase() && 
           c.macro.toLowerCase() === currentOpenMacro.toLowerCase()
@@ -926,7 +978,7 @@
     container.innerHTML = '';
 
     if (activeCart.length === 0) {
-      container.innerHTML = '<p style="text-align:center; color:var(--secondary); font-size:0.9rem; padding:20px;">Nessun elemento selezionato. Vai nella tab <b>Crea Spesa</b> per aggiungere i prodotti.</p>';
+      container.innerHTML = '<p style="text-align:center; color:var(--secondary); font-size:0.9rem; padding:20px;">Nessun prodotto selezionato. Vai nella tab <b>Crea Spesa</b> per aggiungere i prodotti.</p>';
       return;
     }
 
@@ -990,12 +1042,21 @@
     saveData();
   }
 
-  // --- CHIUDI SPESA & STORICO ---
+  // --- CHIUDI SPESA & CONTROLLO PRODOTTI MANCANTI ---
   function openCheckoutModal() {
     if (activeCart.length === 0) {
-      alert("Nessun articolo presente nella lista della spesa.");
+      alert("Nessun prodotto presente nella lista della spesa.");
       return;
     }
+
+    const uncompletedItems = activeCart.filter(item => !item.completed);
+    if (uncompletedItems.length > 0) {
+      const confirmClose = confirm("ATTENZIONE: non hai preso tutti i prodotti della lista, sei sicuro di voler chiudere la spesa?");
+      if (!confirmClose) {
+        return;
+      }
+    }
+
     document.getElementById('checkoutAmount').value = '';
     document.getElementById('checkoutModal').style.display = 'flex';
   }
@@ -1042,6 +1103,7 @@
     switchTab('historyTab', document.querySelectorAll('.tab-btn')[3]);
   }
 
+  // --- STORICO SPESE FIXED (NON IMPLODIBILE) ---
   function renderHistory() {
     const container = document.getElementById('historyList');
     container.innerHTML = '';
@@ -1066,7 +1128,7 @@
             <button class="icon-btn delete-btn" title="Elimina Spesa" onclick="deleteHistoryItem(${h.id})">&times;</button>
           </div>
         </div>
-        <div style="margin-top:8px; padding-top:8px; border-top:1px dashed var(--border); font-size:0.8rem; color:var(--secondary);">
+        <div style="margin-top:10px; padding-top:8px; border-top:1px dashed var(--border); font-size:0.8rem; color:var(--secondary); line-height:1.4;">
           ${itemsSummary}
         </div>
       `;
@@ -1112,12 +1174,12 @@
     const file = event.target.files[0];
     if (!file) return;
 
-    const statusDiv = document.getElementById('ocrStatus');
-    statusDiv.innerText = "Analisi OCR in corso...";
+    // Mostra il dialog di caricamento grande a tutto schermo
+    document.getElementById('ocrLoadingModal').style.display = 'flex';
 
     Tesseract.recognize(file, 'ita', { logger: m => console.log(m) })
       .then(({ data: { text } }) => {
-        statusDiv.innerText = "Analisi completata!";
+        closeModal('ocrLoadingModal');
         const extractedDate = parseDateFromOCRText(text);
         
         document.getElementById('expiryItemName').value = "";
@@ -1134,7 +1196,7 @@
         document.getElementById('expiryModal').style.display = 'flex';
       })
       .catch(() => {
-        statusDiv.innerText = "Errore OCR. Inserimento manuale.";
+        closeModal('ocrLoadingModal');
         openManualExpiryModal();
       });
   }
@@ -1235,7 +1297,7 @@
       Object.keys(subObj).forEach(subCat => {
         subListHtml += `
           <li class="item-row">
-            <span>${subCat} (${subObj[subCat].length} art.)</span>
+            <span>${subCat} (${subObj[subCat].length} prod.)</span>
             <button class="icon-btn delete-btn" onclick="deleteSubCategory('${macroKey}', '${escapeQuotes(subCat)}')">&times;</button>
           </li>
         `;
