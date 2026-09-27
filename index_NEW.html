@@ -655,11 +655,84 @@
     }
   };
 
-  // STATO APPLICAZIONE (LOCALSTORAGE)
-  let catalog = JSON.parse(localStorage.getItem('appCatalog')) || defaultCatalog;
-  let activeCart = JSON.parse(localStorage.getItem('activeCart')) || []; // { id, name, macro, subCat, qty, completed }
-  let historyList = JSON.parse(localStorage.getItem('historyList')) || [];
-  let expiryList = JSON.parse(localStorage.getItem('expiryList')) || [];
+  // MIGRATORE PER RETROCOMPATIBILITÀ BACKUP V1
+  function migrateOldDataToNewSchema(oldData) {
+    if (oldData.catalog && oldData.activeCart) return oldData;
+
+    const newCatalog = JSON.parse(JSON.stringify(defaultCatalog));
+    const newActiveCart = [];
+
+    const macroMap = {
+      'Ortofrutta': { macro: 'alimenti', subCat: 'Ortofrutta' },
+      'Freschi': { macro: 'alimenti', subCat: 'Freschi' },
+      'Pasta & Dispensa': { macro: 'alimenti', subCat: 'Pasta & Dispensa' },
+      'Bevande': { macro: 'alimenti', subCat: 'Pasta & Dispensa' },
+      'Carni rosse': { macro: 'alimenti', subCat: 'Carni & Pesce' },
+      'Carni bianche': { macro: 'alimenti', subCat: 'Carni & Pesce' },
+      'Pesce': { macro: 'alimenti', subCat: 'Carni & Pesce' },
+      'Igiene & Casa': { macro: 'detersivi', subCat: 'Superfici & Casa' },
+      'Altro': { macro: 'alimenti', subCat: 'Generale' }
+    };
+
+    if (Array.isArray(oldData.items)) {
+      oldData.items.forEach(item => {
+        const catInfo = macroMap[item.category] || { macro: 'alimenti', subCat: item.category || 'Generale' };
+        if (!newCatalog[catInfo.macro][catInfo.subCat]) {
+          newCatalog[catInfo.macro][catInfo.subCat] = [];
+        }
+        if (!newCatalog[catInfo.macro][catInfo.subCat].includes(item.text)) {
+          newCatalog[catInfo.macro][catInfo.subCat].push(item.text);
+        }
+        newActiveCart.push({
+          id: Date.now() + Math.random(),
+          name: item.text,
+          macro: catInfo.macro,
+          subCat: catInfo.subCat,
+          qty: item.quantity || 1,
+          completed: !!item.completed
+        });
+      });
+    }
+
+    const newHistoryList = (oldData.history || []).map(h => ({
+      id: Date.now() + Math.random(),
+      date: h.date || new Date().toLocaleDateString('it-IT'),
+      amount: h.amount || 0,
+      store: h.store || "Supermercato",
+      items: h.purchasedItems ? h.purchasedItems.map(pi => ({ name: pi.text, qty: pi.qty || 1, subCat: "Generale" })) : []
+    }));
+
+    const newExpiryList = (oldData.expiryItems || []).map(e => ({
+      id: Date.now() + Math.random(),
+      name: e.name,
+      subCat: "Dispensa",
+      date: e.date
+    }));
+
+    return { catalog: newCatalog, activeCart: newActiveCart, historyList: newHistoryList, expiryList: newExpiryList };
+  }
+
+  // STATO APPLICAZIONE (LOCALSTORAGE CON AUTO-MIGRAZIONE)
+  let catalog, activeCart, historyList, expiryList;
+
+  try {
+    const rawCatalog = localStorage.getItem('appCatalog');
+    if (!rawCatalog) {
+      // Inizializzazione pulita primo avvio
+      catalog = defaultCatalog;
+      activeCart = [];
+      historyList = [];
+      expiryList = [];
+    } else {
+      catalog = JSON.parse(rawCatalog);
+      activeCart = JSON.parse(localStorage.getItem('activeCart')) || [];
+      historyList = JSON.parse(localStorage.getItem('historyList')) || [];
+      expiryList = JSON.parse(localStorage.getItem('expiryList')) || [];
+    }
+  } catch (err) {
+    catalog = defaultCatalog;
+    activeCart = []; historyList = []; expiryList = [];
+  }
 
   let currentOpenMacro = null;
 
@@ -688,7 +761,6 @@
     const titles = { alimenti: '🍎 Alimenti', detersivi: '🧹 Detersivi', igiene: '🧴 Igiene', casa: '🏠 Casa' };
     document.getElementById('boxViewTitle').innerText = titles[macroKey] || 'Macro Box';
 
-    // Popola tendina sotto-categorie per nuovo elemento
     const subSelect = document.getElementById('newBoxSubCategorySelect');
     subSelect.innerHTML = '';
     const subCats = Object.keys(catalog[macroKey] || {});
@@ -763,7 +835,6 @@
     if (current < 1) current = 1;
     qtySpan.innerText = current;
 
-    // Se l'elemento è già nel carrello, aggiorna la quantità direttamente
     const cartItem = activeCart.find(c => c.name === itemName && c.macro === currentOpenMacro);
     if (cartItem) {
       cartItem.qty = current;
@@ -818,7 +889,6 @@
       return;
     }
 
-    // Raggruppa per Sotto-categoria
     const grouped = {};
     activeCart.forEach(item => {
       if (!grouped[item.subCat]) grouped[item.subCat] = [];
@@ -902,7 +972,6 @@
     const now = new Date();
     const dateStr = now.toLocaleDateString('it-IT') + ' ' + now.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
 
-    // Salva nello storico
     historyList.unshift({
       id: Date.now(),
       date: dateStr,
@@ -911,7 +980,6 @@
       items: activeCart.map(i => ({ name: i.name, qty: i.qty, subCat: i.subCat }))
     });
 
-    // Opzionale: Sposta articoli freschi in dispensa
     if (transferCheck) {
       const defaultFutureDate = new Date();
       defaultFutureDate.setDate(defaultFutureDate.getDate() + 5);
@@ -927,7 +995,6 @@
       });
     }
 
-    // Reset carrello attivo
     activeCart = [];
     closeModal('checkoutModal');
     saveData();
@@ -1005,7 +1072,6 @@
   }
 
   function parseDateFromOCRText(text) {
-    // Pattern tipici date: DD/MM/YYYY, DD.MM.YY, DD-MM-YYYY
     const reg = /\b(0[1-9]|[12][0-9]|3[01])[\/\.\-](0[1-9]|1[012])[\/\.\-](20\d\d|\d\d)\b/;
     const match = text.match(reg);
     if (match) {
@@ -1160,7 +1226,7 @@
     const data = { catalog, activeCart, historyList, expiryList };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
     const a = document.createElement("a");
-    a.href = URL.click ? URL.createObjectURL(blob) : '#';
+    a.href = URL.createObjectURL(blob);
     a.download = "backup_spesa_smart.json";
     a.click();
   }
@@ -1173,13 +1239,16 @@
     const reader = new FileReader();
     reader.onload = function(evt) {
       try {
-        const d = JSON.parse(evt.target.result);
-        if (d.catalog) catalog = d.catalog;
-        if (d.activeCart) activeCart = d.activeCart;
-        if (d.historyList) historyList = d.historyList;
-        if (d.expiryList) expiryList = d.expiryList;
+        const rawObj = JSON.parse(evt.target.result);
+        const migrated = migrateOldDataToNewSchema(rawObj);
+        
+        catalog = migrated.catalog;
+        activeCart = migrated.activeCart;
+        historyList = migrated.historyList;
+        expiryList = migrated.expiryList;
+
         saveData();
-        alert("Dati ripristinati con successo!");
+        alert("Dati importati e migrati con successo!");
       } catch (err) { alert("File di backup non valido."); }
     };
     reader.readAsText(file);
