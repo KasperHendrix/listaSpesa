@@ -394,7 +394,7 @@
 <body>
 
 <div class="container">
-  <h1>DispensaBox</h1>
+  <h1>Mamma Dispensa</h1>
 
   <div class="nav-tabs">
     <button class="tab-btn active" onclick="switchTab('createTab', this)">Crea Spesa</button>
@@ -1295,7 +1295,7 @@
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = "backup_dispensabox.json";
+    a.download = "backup_mammadispensa.json";
     a.click();
   }
 
