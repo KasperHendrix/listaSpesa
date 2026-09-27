@@ -380,7 +380,7 @@
       margin-bottom: 14px;
     }
     .guide-step h3 { margin-top: 0; color: var(--primary); font-size: 0.98rem; }
-    .guide-step p { font-size: 0.85rem; color: var(--secondary); line-height: 1.4; margin: 6px 0 10px 0; }
+    .guide-step p { font-size: 0.85rem; color: var(--secondary); line-height: 1.45; margin: 6px 0 10px 0; }
     .mockup-frame {
       background: var(--bg);
       border: 1px solid var(--border);
@@ -509,41 +509,70 @@
     <h2 style="font-size:1.1rem; color:var(--primary); margin-top:0; text-align:center;">Guida & Funzionamento App</h2>
 
     <div class="guide-step">
-      <h3>1. Creazione Spesa dai Macro-Box</h3>
-      <p>Entra in una delle 4 macro-categorie (<i>Alimenti, Detersivi, Igiene, Casa</i>). Scegli la quantità desiderata e premi <b>"Metti nel carrello"</b>. Al primo avvio la lista attiva è vuota finché non selezioni i prodotti.</p>
+      <h3>1. Come creare una Lista Spesa</h3>
+      <p>Entra in uno dei 4 Macro-Box (<i>Alimenti, Detersivi, Igiene, Casa</i>). Seleziona la quantità con i tasti <b>+</b> / <b>-</b> e premi <b>"Metti nel carrello"</b> per inviare il prodotto alla spesa attiva. Se un elemento non è presente in catalogo, puoi aggiungerlo al volo col campo in alto. Al primo avvio la spesa attiva è vuota finché non invii i prodotti dai box.</p>
       <div class="mockup-frame">
-        <div class="mockup-header">Anteprima Box Alimenti</div>
+        <div class="mockup-header">Anteprima Catalogo Box</div>
         <div style="display:flex; justify-content:space-between; align-items:center; background:white; padding:6px; border-radius:6px; border:1px solid var(--border);">
-          <span>Pane Integrale</span>
-          <span class="btn-add-cart added" style="padding:4px 6px;">✓ In Lista (x1)</span>
+          <span style="font-weight:600;">Pane Integrale</span>
+          <div style="display:flex; align-items:center; gap:6px;">
+            <span style="background:#f1f5f9; padding:2px 6px; border-radius:4px; font-weight:700;">x1</span>
+            <span class="btn-add-cart added" style="padding:4px 6px;">✓ In Lista</span>
+          </div>
         </div>
       </div>
     </div>
 
     <div class="guide-step">
-      <h3>2. Consultazione e Spunta a Fisarmonica</h3>
-      <p>Nella tab <b>Lista Spesa</b> trovi solo gli articoli che hai inviato al carrello. Le sotto-categorie si possono aprire e chiudere con un tap per evitare continui scorrimenti mentre spunti i prodotti al supermercato.</p>
+      <h3>2. Consultazione Lista Spesa</h3>
+      <p>Nella tab <b>Lista Spesa</b> trovi solo ed esclusivamente gli articoli inviati dai Macro-Box per la spesa corrente. La lista è organizzata a fisarmonica (accordion): puoi aprire o chiudere ogni sotto-categoria toccando l'intestazione, riducendo lo scorrimento e focalizzandoti solo sul reparto in cui ti trovi al supermercato.</p>
       <div class="mockup-frame">
         <div class="mockup-header">Anteprima Lista Fisarmonica</div>
         <div style="background:white; border:1px solid var(--border); border-radius:6px; padding:6px;">
           <div style="display:flex; justify-content:space-between; font-weight:700;">
             <span>Freschi (1)</span> <span>▲</span>
           </div>
-          <div style="padding-top:4px; font-size:0.75rem;">
-            <input type="checkbox" checked> <span style="text-decoration:line-through;">Latte Scremato (x2)</span>
+          <div style="padding-top:4px; font-size:0.8rem; display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <input type="checkbox" checked> <span style="text-decoration:line-through;">Latte Scremato</span>
+            </div>
+            <span style="background:#e2e8f0; padding:1px 4px; border-radius:4px; font-weight:700; font-size:0.75rem;">x2</span>
           </div>
         </div>
       </div>
     </div>
 
     <div class="guide-step">
-      <h3>3. Chiusura Spesa e Scelta Supermercato</h3>
-      <p>Al termine degli acquisti premi <b>"Chiudi spesa"</b> 🧾. Inserisci l'importo totale e seleziona il <b>Supermercato</b> dal menu a tendina. Gli importi inseriti si sommeranno cumulativamente nello <b>Storico Spese</b>.</p>
+      <h3>3. Chiusura Spesa, Supermercato e Storico</h3>
+      <p>Quando hai terminato gli acquisti, premi il tasto <b>"Chiudi spesa"</b> 🧾. Inserisci l'importo totale pagato e seleziona il <b>Supermercato</b> dal menu precompilato. Gli importi si sommeranno cumulativamente nella tab <b>Storico</b>, dove ogni card mostrerà il badge del punto vendita, la data, l'ora e il dettaglio degli articoli acquistati.</p>
+      <div class="mockup-frame">
+        <div class="mockup-header">Anteprima Card Storico</div>
+        <div style="background:white; border:1px solid var(--border); border-radius:6px; padding:6px;">
+          <span class="badge badge-store" style="font-size:0.68rem;">Esselunga</span>
+          <div style="font-weight:800; font-size:1rem; margin-top:2px;">42.50 €</div>
+          <div style="font-size:0.7rem; color:var(--secondary);">27/09/2026 15:30</div>
+        </div>
+      </div>
     </div>
 
     <div class="guide-step">
-      <h3>4. Dispensa Scadenze & OCR Fotocamera</h3>
-      <p>Scatta una foto al timbro della data di scadenza. L'OCR tenterà l'autocompilazione. Ricorda di verificare e confermare la data prima di salvare il prodotto in dispensa.</p>
+      <h3>4. Gestione Scadenze</h3>
+      <p>Usa la fotocamera per scattare una foto alla data di scadenza del prodotto. L'OCR analizzerà l'immagine e proverà ad estrarre la data automaticamente. Verifica e conferma sempre la data prima di salvare il prodotto in dispensa. Puoi anche inserire i prodotti manualmente o trasferirli in automatico durante la chiusura spesa.</p>
+      <div class="mockup-frame">
+        <div class="mockup-header">Anteprima Card Scadenza</div>
+        <div class="expiry-card urgent" style="margin-bottom:0; padding:6px;">
+          <div>
+            <h4 style="margin:0; font-size:0.85rem;">Yogurt Greco</h4>
+            <div style="font-size:0.7rem; color:var(--secondary);">Freschi - Scad: 30/09/2026</div>
+            <span class="badge badge-urgent" style="font-size:0.65rem;">Scade tra 3 gg!</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="guide-step">
+      <h3>5. Personalizzazione Categorie e Backup</h3>
+      <p>Nella tab <b>Impostazioni</b> puoi gestire la struttura gerarchica aggiungendo o rimuovendo sotto-categorie per ogni Macro-Box. Inoltre, puoi esportare o importare il tuo file di backup in formato JSON per conservare o trasferire tutti i tuoi dati.</p>
     </div>
   </div>
 </div>
