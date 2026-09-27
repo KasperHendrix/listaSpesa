@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Spesa & Dispensa Smart</title>
+  <title>Mamma Dispensa</title>
 
   <!-- Tesseract.js per OCR Scadenze da Fotocamera -->
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
@@ -394,7 +394,7 @@
 <body>
 
 <div class="container">
-  <h1>Spesa & Dispensa Smart</h1>
+  <h1>DispensaBox</h1>
 
   <div class="nav-tabs">
     <button class="tab-btn active" onclick="switchTab('createTab', this)">Crea Spesa</button>
@@ -614,7 +614,39 @@
   </div>
 </div>
 
-<!-- MODAL INSERIMENTO MANUAL SCADENZA -->
+<!-- MODAL MODIFICA SPESA STORICO -->
+<div id="editHistoryModal" class="modal">
+  <div class="modal-content">
+    <h3>✏️ Modifica Spesa nello Storico</h3>
+    <input type="hidden" id="editHistoryId">
+
+    <label>Importo Speso (€)</label>
+    <input type="number" id="editHistoryAmount" step="0.01">
+
+    <label>Supermercato</label>
+    <select id="editHistoryStoreSelect">
+      <option value="Esselunga">Esselunga</option>
+      <option value="Ipercoop">Ipercoop</option>
+      <option value="Lidl">Lidl</option>
+      <option value="Conad">Conad</option>
+      <option value="Unes">Unes</option>
+      <option value="Amazon fresh">Amazon fresh</option>
+      <option value="Carrefour">Carrefour</option>
+      <option value="Eurospin">Eurospin</option>
+      <option value="Pam">Pam</option>
+      <option value="Bennet">Bennet</option>
+      <option value="Aldi">Aldi</option>
+      <option value="Il Viaggiator Goloso">Il Viaggiator Goloso</option>
+    </select>
+
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal('editHistoryModal')">Annulla</button>
+      <button class="btn" onclick="saveEditedHistory()">Salva Modifiche</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL INSERIMENTO MANUALE SCADENZA -->
 <div id="expiryModal" class="modal">
   <div class="modal-content">
     <h3>Prodotto in Dispensa</h3>
@@ -686,7 +718,7 @@
         newActiveCart.push({
           id: Date.now() + Math.random(),
           name: item.text,
-          macro: catInfo.macro,
+          macro: catInfo.macro.toLowerCase(),
           subCat: catInfo.subCat,
           qty: item.quantity || 1,
           completed: !!item.completed
@@ -698,7 +730,7 @@
       id: Date.now() + Math.random(),
       date: h.date || new Date().toLocaleDateString('it-IT'),
       amount: h.amount || 0,
-      store: h.store || "Supermercato",
+      store: h.store || "Esselunga",
       items: h.purchasedItems ? h.purchasedItems.map(pi => ({ name: pi.text, qty: pi.qty || 1, subCat: "Generale" })) : []
     }));
 
@@ -718,7 +750,6 @@
   try {
     const rawCatalog = localStorage.getItem('appCatalog');
     if (!rawCatalog) {
-      // Inizializzazione pulita primo avvio
       catalog = defaultCatalog;
       activeCart = [];
       historyList = [];
@@ -754,16 +785,16 @@
 
   // --- CREA SPESA & SUBVIEW BOX ---
   function openBoxView(macroKey) {
-    currentOpenMacro = macroKey;
+    currentOpenMacro = macroKey.toLowerCase();
     document.getElementById('macroBoxGrid').style.display = 'none';
     document.getElementById('boxDetailView').style.display = 'block';
 
     const titles = { alimenti: '🍎 Alimenti', detersivi: '🧹 Detersivi', igiene: '🧴 Igiene', casa: '🏠 Casa' };
-    document.getElementById('boxViewTitle').innerText = titles[macroKey] || 'Macro Box';
+    document.getElementById('boxViewTitle').innerText = titles[currentOpenMacro] || 'Macro Box';
 
     const subSelect = document.getElementById('newBoxSubCategorySelect');
     subSelect.innerHTML = '';
-    const subCats = Object.keys(catalog[macroKey] || {});
+    const subCats = Object.keys(catalog[currentOpenMacro] || {});
     subCats.forEach(sc => {
       const opt = document.createElement('option');
       opt.value = sc; opt.innerText = sc;
@@ -794,7 +825,11 @@
 
       let itemsHtml = '';
       itemsArr.forEach(itemName => {
-        const cartItem = activeCart.find(c => c.name === itemName && c.macro === currentOpenMacro);
+        // Matching robusto e insensibile al maiuscolo/minuscolo
+        const cartItem = activeCart.find(c => 
+          c.name.trim().toLowerCase() === itemName.trim().toLowerCase() && 
+          c.macro.toLowerCase() === currentOpenMacro.toLowerCase()
+        );
         const inCartQty = cartItem ? cartItem.qty : 1;
         const isAdded = !!cartItem;
 
@@ -802,11 +837,11 @@
           <li class="item-row">
             <span style="font-size:0.88rem; font-weight:600; flex:1;">${itemName}</span>
             <div class="qty-controls">
-              <button class="qty-btn" onclick="adjustCatalogQty('${itemName}', -1)">-</button>
+              <button class="qty-btn" onclick="adjustCatalogQty('${escapeQuotes(itemName)}', -1)">-</button>
               <span class="qty-val" id="qty-${cleanId(itemName)}">${inCartQty}</span>
-              <button class="qty-btn" onclick="adjustCatalogQty('${itemName}', 1)">+</button>
+              <button class="qty-btn" onclick="adjustCatalogQty('${escapeQuotes(itemName)}', 1)">+</button>
             </div>
-            <button class="btn-add-cart ${isAdded ? 'added' : ''}" onclick="toggleAddToCart('${itemName}', '${subCat}')">
+            <button class="btn-add-cart ${isAdded ? 'added' : ''}" onclick="toggleAddToCart('${escapeQuotes(itemName)}', '${escapeQuotes(subCat)}')">
               ${isAdded ? '✓ In Lista' : '+ Metti nel carrello'}
             </button>
           </li>
@@ -826,16 +861,20 @@
     });
   }
 
+  function escapeQuotes(str) { return str.replace(/'/g, "\\'"); }
   function cleanId(str) { return str.replace(/[^a-zA-Z0-9]/g, '_'); }
 
   function adjustCatalogQty(itemName, delta) {
     const qtySpan = document.getElementById(`qty-${cleanId(itemName)}`);
-    let current = parseInt(qtySpan.innerText) || 1;
+    let current = qtySpan ? (parseInt(qtySpan.innerText) || 1) : 1;
     current += delta;
     if (current < 1) current = 1;
-    qtySpan.innerText = current;
+    if (qtySpan) qtySpan.innerText = current;
 
-    const cartItem = activeCart.find(c => c.name === itemName && c.macro === currentOpenMacro);
+    const cartItem = activeCart.find(c => 
+      c.name.trim().toLowerCase() === itemName.trim().toLowerCase() && 
+      c.macro.toLowerCase() === currentOpenMacro.toLowerCase()
+    );
     if (cartItem) {
       cartItem.qty = current;
       saveData();
@@ -844,23 +883,26 @@
 
   function toggleAddToCart(itemName, subCat) {
     const qtySpan = document.getElementById(`qty-${cleanId(itemName)}`);
-    const qty = parseInt(qtySpan.innerText) || 1;
+    const qty = qtySpan ? (parseInt(qtySpan.innerText) || 1) : 1;
 
-    const existingIdx = activeCart.findIndex(c => c.name === itemName && c.macro === currentOpenMacro);
+    const existingIdx = activeCart.findIndex(c => 
+      c.name.trim().toLowerCase() === itemName.trim().toLowerCase() && 
+      c.macro.toLowerCase() === currentOpenMacro.toLowerCase()
+    );
+
     if (existingIdx >= 0) {
       activeCart.splice(existingIdx, 1);
     } else {
       activeCart.push({
         id: Date.now() + Math.random(),
         name: itemName,
-        macro: currentOpenMacro,
+        macro: currentOpenMacro.toLowerCase(),
         subCat: subCat,
         qty: qty,
         completed: false
       });
     }
     saveData();
-    renderBoxCatalogList();
   }
 
   function addNewItemToCatalog() {
@@ -874,12 +916,11 @@
         catalog[currentOpenMacro][subCat].push(val);
         textInput.value = '';
         saveData();
-        renderBoxCatalogList();
       }
     }
   }
 
-  // --- TAB LISTA SPESA (SOLA CONSULTAZIONE A FISARMONICA) ---
+  // --- TAB LISTA SPESA ---
   function renderActiveList() {
     const container = document.getElementById('activeShoppingList');
     container.innerHTML = '';
@@ -1020,7 +1061,10 @@
             <div style="font-weight:800; font-size:1.15rem; margin-top:2px;">${h.amount.toFixed(2)} €</div>
             <div style="font-size:0.75rem; color:var(--secondary);">${h.date}</div>
           </div>
-          <button class="icon-btn delete-btn" onclick="deleteHistoryItem(${h.id})">&times;</button>
+          <div style="display:flex; gap:4px;">
+            <button class="icon-btn" title="Modifica Spesa" onclick="openEditHistoryModal(${h.id})">✏️</button>
+            <button class="icon-btn delete-btn" title="Elimina Spesa" onclick="deleteHistoryItem(${h.id})">&times;</button>
+          </div>
         </div>
         <div style="margin-top:8px; padding-top:8px; border-top:1px dashed var(--border); font-size:0.8rem; color:var(--secondary);">
           ${itemsSummary}
@@ -1030,6 +1074,30 @@
     });
 
     document.getElementById('totalSpent').innerText = grandTotal.toFixed(2) + ' €';
+  }
+
+  function openEditHistoryModal(id) {
+    const item = historyList.find(h => h.id === id);
+    if (!item) return;
+
+    document.getElementById('editHistoryId').value = item.id;
+    document.getElementById('editHistoryAmount').value = item.amount;
+    document.getElementById('editHistoryStoreSelect').value = item.store || 'Esselunga';
+    document.getElementById('editHistoryModal').style.display = 'flex';
+  }
+
+  function saveEditedHistory() {
+    const id = parseFloat(document.getElementById('editHistoryId').value);
+    const amountVal = parseFloat(document.getElementById('editHistoryAmount').value);
+    const storeVal = document.getElementById('editHistoryStoreSelect').value;
+
+    const item = historyList.find(h => h.id === id);
+    if (item && !isNaN(amountVal) && amountVal >= 0) {
+      item.amount = amountVal;
+      item.store = storeVal;
+      closeModal('editHistoryModal');
+      saveData();
+    }
   }
 
   function deleteHistoryItem(id) {
@@ -1168,7 +1236,7 @@
         subListHtml += `
           <li class="item-row">
             <span>${subCat} (${subObj[subCat].length} art.)</span>
-            <button class="icon-btn delete-btn" onclick="deleteSubCategory('${macroKey}', '${subCat}')">&times;</button>
+            <button class="icon-btn delete-btn" onclick="deleteSubCategory('${macroKey}', '${escapeQuotes(subCat)}')">&times;</button>
           </li>
         `;
       });
@@ -1207,7 +1275,7 @@
   // --- BADGES & RENDER GENERALE ---
   function renderBadges() {
     ['alimenti', 'detersivi', 'igiene', 'casa'].forEach(macro => {
-      const count = activeCart.filter(c => c.macro === macro).length;
+      const count = activeCart.filter(c => c.macro.toLowerCase() === macro).length;
       const b = document.getElementById(`badge-${macro}`);
       if (b) {
         b.innerText = `${count} scelti`;
@@ -1227,7 +1295,7 @@
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = "backup_spesa_smart.json";
+    a.download = "backup_dispensabox.json";
     a.click();
   }
 
