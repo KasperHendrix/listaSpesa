@@ -1,0 +1,1172 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spesa & Dispensa Smart</title>
+
+  <!-- Tesseract.js per OCR Scadenze da Fotocamera -->
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
+
+  <style>
+    :root {
+      --bg: #f4f6f8;
+      --card: #ffffff;
+      --text: #0f172a;
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --accent: #dc2626;
+      --border: #cbd5e1;
+      --secondary: #475569;
+      --success: #16a34a;
+      --warning: #d97706;
+      --chip-bg: #e2e8f0;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 12px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 480px;
+      background: var(--card);
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      box-sizing: border-box;
+      position: relative;
+    }
+
+    h1 {
+      margin-top: 0;
+      font-size: 1.35rem;
+      text-align: center;
+      color: var(--primary);
+    }
+
+    /* Nav Tabs Top */
+    .nav-tabs {
+      display: flex;
+      border-bottom: 2px solid var(--border);
+      margin-bottom: 16px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .nav-tabs::-webkit-scrollbar { display: none; }
+
+    .tab-btn {
+      flex: 1;
+      padding: 10px 6px;
+      text-align: center;
+      background: none;
+      border: none;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--secondary);
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      margin-bottom: -2px;
+      white-space: nowrap;
+    }
+
+    .tab-btn.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+    }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* GRID 2x2 MACRO-BOX */
+    .macro-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 8px;
+    }
+
+    .macro-card {
+      background: #f8fafc;
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.15s ease-in-out;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .macro-card:active {
+      transform: scale(0.97);
+      background: #e2e8f0;
+    }
+
+    .macro-icon { font-size: 2.2rem; }
+    .macro-title { font-weight: 800; font-size: 1rem; color: var(--text); }
+    .macro-badge {
+      font-size: 0.72rem;
+      background: var(--primary);
+      color: white;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-weight: 700;
+    }
+    .macro-badge.empty {
+      background: var(--chip-bg);
+      color: var(--secondary);
+    }
+
+    /* SUB-PAGINA DENTRO BOX */
+    .subview-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .back-btn {
+      background: #e2e8f0;
+      color: var(--text);
+      border: none;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+
+    /* CONTROLLI INPUT ED ELEMENTI */
+    .input-box-row {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 14px;
+      background: #f8fafc;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      flex-wrap: wrap;
+    }
+
+    input[type="text"], select, input[type="number"], input[type="date"] {
+      padding: 10px 10px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.9rem;
+      outline: none;
+      background: #fff;
+      box-sizing: border-box;
+    }
+
+    .btn {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 0.88rem;
+      box-sizing: border-box;
+      text-align: center;
+    }
+
+    .btn-checkout {
+      background-color: var(--primary);
+      color: #ffffff;
+      border: none;
+      padding: 14px 16px;
+      border-radius: 10px;
+      font-weight: 800;
+      cursor: pointer;
+      width: 100%;
+      font-size: 1rem;
+      margin-top: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 3px 8px rgba(37, 99, 235, 0.3);
+    }
+
+    .btn-secondary {
+      background-color: #f1f5f9;
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 8px 12px;
+      font-size: 0.85rem;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    /* LISTE E FISARMONICHE (ACCORDION) */
+    .accordion-item {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      margin-bottom: 10px;
+      overflow: hidden;
+      background: white;
+    }
+
+    .accordion-header {
+      background: #f8fafc;
+      padding: 12px 14px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+      color: var(--text);
+    }
+
+    .accordion-content {
+      padding: 0 12px 8px 12px;
+      display: block;
+    }
+
+    .accordion-content.collapsed { display: none; }
+
+    ul { list-style: none; padding: 0; margin: 0; }
+
+    li.item-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+      gap: 8px;
+    }
+    li.item-row:last-child { border-bottom: none; }
+
+    .qty-controls {
+      display: flex;
+      align-items: center;
+      background: #f1f5f9;
+      border-radius: 6px;
+      padding: 2px 4px;
+      border: 1px solid var(--border);
+    }
+
+    .qty-btn {
+      background: none;
+      border: none;
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--primary);
+      cursor: pointer;
+      padding: 2px 8px;
+    }
+
+    .qty-val {
+      font-size: 0.88rem;
+      font-weight: 800;
+      min-width: 18px;
+      text-align: center;
+    }
+
+    .btn-add-cart {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .btn-add-cart.added {
+      background: var(--success);
+    }
+
+    .icon-btn {
+      background: none;
+      border: none;
+      font-size: 1rem;
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 4px;
+    }
+    .delete-btn { color: var(--accent); }
+
+    /* CARD SCADENZE */
+    .expiry-card {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-left: 5px solid #cbd5e1;
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .expiry-card.expired { border-left-color: var(--accent); background: #fef2f2; }
+    .expiry-card.urgent { border-left-color: #f97316; background: #fff7ed; }
+    .expiry-card.warning { border-left-color: var(--warning); background: #fefce8; }
+    .expiry-card.safe { border-left-color: var(--success); }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      margin-top: 4px;
+    }
+    .badge-expired { background: #fee2e2; color: #991b1b; }
+    .badge-urgent { background: #ffedd5; color: #c2410c; }
+    .badge-warning { background: #fef9c3; color: #854d0e; }
+    .badge-safe { background: #dcfce7; color: #166534; }
+    .badge-store { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+
+    /* STORICO CARD */
+    .history-card {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 10px;
+    }
+
+    /* MODAL */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(15, 23, 42, 0.6);
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      box-sizing: border-box;
+      z-index: 1000;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 18px;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 380px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+    .modal-content h3 { margin-top: 0; font-size: 1.1rem; }
+    .modal-content label { display: block; margin-top: 10px; font-weight: 600; font-size: 0.82rem; color: var(--secondary); }
+    .modal-content select, .modal-content input { width: 100%; margin-top: 4px; }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+
+    /* GUIDA STYLES */
+    .guide-step {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 14px;
+    }
+    .guide-step h3 { margin-top: 0; color: var(--primary); font-size: 0.98rem; }
+    .guide-step p { font-size: 0.85rem; color: var(--secondary); line-height: 1.4; margin: 6px 0 10px 0; }
+    .mockup-frame {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px;
+      font-size: 0.78rem;
+    }
+    .mockup-header { font-weight: 700; color: var(--secondary); font-size: 0.7rem; margin-bottom: 6px; text-transform: uppercase; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Spesa & Dispensa Smart</h1>
+
+  <div class="nav-tabs">
+    <button class="tab-btn active" onclick="switchTab('createTab', this)">Crea Spesa</button>
+    <button class="tab-btn" onclick="switchTab('listTab', this)">Lista Spesa <span id="cartCountBadge">(0)</span></button>
+    <button class="tab-btn" onclick="switchTab('expiryTab', this)">Scadenze</button>
+    <button class="tab-btn" onclick="switchTab('historyTab', this)">Storico</button>
+    <button class="tab-btn" onclick="switchTab('settingsTab', this)">Impostazioni</button>
+    <button class="tab-btn" onclick="switchTab('guideTab', this)">Guida</button>
+  </div>
+
+  <!-- TAB 1: CREA SPESA (MACRO-BOX 2x2) -->
+  <div id="createTab" class="tab-content active">
+    <div id="macroBoxGrid" class="macro-grid">
+      <div class="macro-card" onclick="openBoxView('alimenti')">
+        <span class="macro-icon">🍎</span>
+        <span class="macro-title">Alimenti</span>
+        <span class="macro-badge empty" id="badge-alimenti">0 scelti</span>
+      </div>
+      <div class="macro-card" onclick="openBoxView('detersivi')">
+        <span class="macro-icon">🧹</span>
+        <span class="macro-title">Detersivi</span>
+        <span class="macro-badge empty" id="badge-detersivi">0 scelti</span>
+      </div>
+      <div class="macro-card" onclick="openBoxView('igiene')">
+        <span class="macro-icon">🧴</span>
+        <span class="macro-title">Igiene</span>
+        <span class="macro-badge empty" id="badge-igiene">0 scelti</span>
+      </div>
+      <div class="macro-card" onclick="openBoxView('casa')">
+        <span class="macro-icon">🏠</span>
+        <span class="macro-title">Casa</span>
+        <span class="macro-badge empty" id="badge-casa">0 scelti</span>
+      </div>
+    </div>
+
+    <!-- Sottopagina Dettaglio Macro-Box -->
+    <div id="boxDetailView" style="display:none;">
+      <div class="subview-header">
+        <button class="back-btn" onclick="closeBoxView()">← Torna ai Box</button>
+        <h2 id="boxViewTitle" style="margin:0; font-size:1.1rem; color:var(--primary);">Macro Box</h2>
+      </div>
+
+      <div class="input-box-row">
+        <input type="text" id="newBoxItemText" placeholder="Nuovo elemento non in catalogo..." style="flex:1; min-width:140px;">
+        <select id="newBoxSubCategorySelect" style="flex:1; min-width:120px;"></select>
+        <button class="btn" onclick="addNewItemToCatalog()">+ Aggiungi</button>
+      </div>
+
+      <div id="boxCatalogList"></div>
+    </div>
+  </div>
+
+  <!-- TAB 2: LISTA SPESA (SOLA CONSULTAZIONE A FISARMONICA) -->
+  <div id="listTab" class="tab-content">
+    <p style="font-size:0.85rem; color:var(--secondary); margin-top:0;">Spunta gli articoli mentre sei al supermercato. Espandi o comprimi le categorie per scorrere agevolmente.</p>
+    
+    <div id="activeShoppingList"></div>
+
+    <button class="btn-checkout" onclick="openCheckoutModal()">
+      🧾 Chiudi spesa
+    </button>
+  </div>
+
+  <!-- TAB 3: SCADENZE & DISPENSA -->
+  <div id="expiryTab" class="tab-content">
+    <div style="background:#f8fafc; border:1px solid var(--border); padding:12px; border-radius:10px; margin-bottom:12px;">
+      <label style="font-weight:700; font-size:0.85rem; display:block; margin-bottom:6px;">📷 Scansione Fotocamera + OCR Data</label>
+      <input type="file" id="ocrCameraInput" accept="image/*" capture="environment" style="display:none;" onchange="handleOCRCameraUpload(event)">
+      <button class="btn" style="width:100%; background:#4f46e5;" onclick="document.getElementById('ocrCameraInput').click()">
+        📸 Scatta Foto alla Scadenza
+      </button>
+      <div id="ocrStatus" style="font-size:0.78rem; color:var(--secondary); text-align:center; margin-top:6px;"></div>
+    </div>
+
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+      <h3 style="margin: 0; font-size: 1rem;">Prodotti in Dispensa</h3>
+      <button class="btn-secondary" onclick="openManualExpiryModal()">+ Manuale</button>
+    </div>
+
+    <div id="expiryList"></div>
+  </div>
+
+  <!-- TAB 4: STORICO SPESE -->
+  <div id="historyTab" class="tab-content">
+    <div style="background:#f8fafc; border:1px solid var(--border); border-radius:10px; padding:14px; text-align:center; margin-bottom:12px;">
+      <div style="font-size: 0.78rem; color: var(--secondary); text-transform: uppercase; font-weight:700;">Totale Speso Cumulativo</div>
+      <div id="totalSpent" style="font-size: 1.7rem; font-weight: 800; color: var(--primary);">0.00 €</div>
+    </div>
+    <div id="historyList"></div>
+  </div>
+
+  <!-- TAB 5: IMPOSTAZIONI CATEGORIE & BACKUP -->
+  <div id="settingsTab" class="tab-content">
+    <div style="background:#f8fafc; border:1px solid var(--border); border-radius:10px; padding:14px; margin-bottom:12px;">
+      <h3 style="margin-top:0; font-size:1rem;">⚙️ Gestione Sotto-Categorie</h3>
+      <p style="font-size:0.8rem; color:var(--secondary);">Personalizza le sotto-categorie appartenenti a ciascun Macro-Box.</p>
+      <div id="settingsTreeContainer"></div>
+    </div>
+
+    <div style="background:#f8fafc; border:1px solid var(--border); border-radius:10px; padding:14px;">
+      <h3 style="margin-top:0; font-size:1rem;">💾 Backup Dati (JSON)</h3>
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <button class="btn-secondary" onclick="exportData()">💾 Esporta Backup JSON</button>
+        <button class="btn-secondary" onclick="importData()">📂 Importa Backup JSON</button>
+        <input type="file" id="importFileInput" style="display:none" accept=".json" onchange="handleFileImport(event)">
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 6: GUIDA E ISTRUZIONI -->
+  <div id="guideTab" class="tab-content">
+    <h2 style="font-size:1.1rem; color:var(--primary); margin-top:0; text-align:center;">Guida & Funzionamento App</h2>
+
+    <div class="guide-step">
+      <h3>1. Creazione Spesa dai Macro-Box</h3>
+      <p>Entra in una delle 4 macro-categorie (<i>Alimenti, Detersivi, Igiene, Casa</i>). Scegli la quantità desiderata e premi <b>"Metti nel carrello"</b>. Al primo avvio la lista attiva è vuota finché non selezioni i prodotti.</p>
+      <div class="mockup-frame">
+        <div class="mockup-header">Anteprima Box Alimenti</div>
+        <div style="display:flex; justify-content:space-between; align-items:center; background:white; padding:6px; border-radius:6px; border:1px solid var(--border);">
+          <span>Pane Integrale</span>
+          <span class="btn-add-cart added" style="padding:4px 6px;">✓ In Lista (x1)</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="guide-step">
+      <h3>2. Consultazione e Spunta a Fisarmonica</h3>
+      <p>Nella tab <b>Lista Spesa</b> trovi solo gli articoli che hai inviato al carrello. Le sotto-categorie si possono aprire e chiudere con un tap per evitare continui scorrimenti mentre spunti i prodotti al supermercato.</p>
+      <div class="mockup-frame">
+        <div class="mockup-header">Anteprima Lista Fisarmonica</div>
+        <div style="background:white; border:1px solid var(--border); border-radius:6px; padding:6px;">
+          <div style="display:flex; justify-content:space-between; font-weight:700;">
+            <span>Freschi (1)</span> <span>▲</span>
+          </div>
+          <div style="padding-top:4px; font-size:0.75rem;">
+            <input type="checkbox" checked> <span style="text-decoration:line-through;">Latte Scremato (x2)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="guide-step">
+      <h3>3. Chiusura Spesa e Scelta Supermercato</h3>
+      <p>Al termine degli acquisti premi <b>"Chiudi spesa"</b> 🧾. Inserisci l'importo totale e seleziona il <b>Supermercato</b> dal menu a tendina. Gli importi inseriti si sommeranno cumulativamente nello <b>Storico Spese</b>.</p>
+    </div>
+
+    <div class="guide-step">
+      <h3>4. Dispensa Scadenze & OCR Fotocamera</h3>
+      <p>Scatta una foto al timbro della data di scadenza. L'OCR tenterà l'autocompilazione. Ricorda di verificare e confermare la data prima di salvare il prodotto in dispensa.</p>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CHIUDI SPESA -->
+<div id="checkoutModal" class="modal">
+  <div class="modal-content">
+    <h3>🧾 Chiudi Spesa Corrente</h3>
+    <p style="font-size:0.8rem; color:var(--secondary); margin-bottom:8px;">Inserisci l'importo pagato e il punto vendita per archiviare la spesa.</p>
+    
+    <label>Importo Totale Speso (€)</label>
+    <input type="number" id="checkoutAmount" step="0.01" placeholder="Es. 34.50">
+
+    <label>Supermercato</label>
+    <select id="checkoutStoreSelect">
+      <option value="Esselunga">Esselunga</option>
+      <option value="Ipercoop">Ipercoop</option>
+      <option value="Lidl">Lidl</option>
+      <option value="Conad">Conad</option>
+      <option value="Unes">Unes</option>
+      <option value="Amazon fresh">Amazon fresh</option>
+      <option value="Carrefour">Carrefour</option>
+      <option value="Eurospin">Eurospin</option>
+      <option value="Pam">Pam</option>
+      <option value="Bennet">Bennet</option>
+      <option value="Aldi">Aldi</option>
+      <option value="Il Viaggiator Goloso">Il Viaggiator Goloso</option>
+    </select>
+
+    <div style="margin-top:12px;">
+      <input type="checkbox" id="transferToExpiryCheck" checked style="width:auto;">
+      <label for="transferToExpiryCheck" style="display:inline; font-weight:normal; font-size:0.8rem;">Sposta i prodotti freschi/deperibili in Scadenze</label>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal('checkoutModal')">Annulla</button>
+      <button class="btn" onclick="confirmCheckout()">Registra Spesa</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL INSERIMENTO MANUAL SCADENZA -->
+<div id="expiryModal" class="modal">
+  <div class="modal-content">
+    <h3>Prodotto in Dispensa</h3>
+    <label>Nome Prodotto</label>
+    <input type="text" id="expiryItemName" placeholder="Es. Yogurt Greco">
+
+    <label>Sotto-categoria</label>
+    <input type="text" id="expiryItemSubCat" placeholder="Es. Freschi">
+
+    <label>Data di Scadenza</label>
+    <input type="date" id="expiryItemDate">
+
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal('expiryModal')">Annulla</button>
+      <button class="btn" onclick="saveExpiryItem()">Salva in Dispensa</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // CATALOGO PRECARICATO DI BASE
+  const defaultCatalog = {
+    alimenti: {
+      "Freschi": ["Latte Parzialmente Scremato", "Yogurt Greco", "Burro", "Formaggio Spalmabile", "Mozzarella", "Uova"],
+      "Ortofrutta": ["Mele Fuji", "Banane", "Zucchine", "Insalata Mista", "Pomodori"],
+      "Pasta & Dispensa": ["Pasta Penne Rigate", "Riso Basmati", "Passata di Pomodoro", "Olio EVO", "Sale Fino"],
+      "Carni & Pesce": ["Petto di Pollo", "Macinato Bovino", "Filetto di Salmone"]
+    },
+    detersivi: {
+      "Lavatrice & Piatti": ["Detersivo Liquido Lavatrice", "Ammorbidente", "Detersivo Piatti Concentrato"],
+      "Superfici & Casa": ["Sgrassatore Universale", "Detergente Pavimenti", "Candeggina"]
+    },
+    igiene: {
+      "Cura Persona": ["Bagnoschiuma Idratante", "Shampoo Delicato", "Dentifricio", "Sapone Liquido HandWash"]
+    },
+    casa: {
+      "Carta & Cancelleria": ["Carta Casa Rotoloni", "Carta Igienica", "Sacchetti Immondizia 30L", "Alluminio in Fogli"]
+    }
+  };
+
+  // STATO APPLICAZIONE (LOCALSTORAGE)
+  let catalog = JSON.parse(localStorage.getItem('appCatalog')) || defaultCatalog;
+  let activeCart = JSON.parse(localStorage.getItem('activeCart')) || []; // { id, name, macro, subCat, qty, completed }
+  let historyList = JSON.parse(localStorage.getItem('historyList')) || [];
+  let expiryList = JSON.parse(localStorage.getItem('expiryList')) || [];
+
+  let currentOpenMacro = null;
+
+  function saveData() {
+    localStorage.setItem('appCatalog', JSON.stringify(catalog));
+    localStorage.setItem('activeCart', JSON.stringify(activeCart));
+    localStorage.setItem('historyList', JSON.stringify(historyList));
+    localStorage.setItem('expiryList', JSON.stringify(expiryList));
+    renderAll();
+  }
+
+  function switchTab(tabId, btnElement) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    
+    btnElement.classList.add('active');
+    document.getElementById(tabId).classList.add('active');
+  }
+
+  // --- CREA SPESA & SUBVIEW BOX ---
+  function openBoxView(macroKey) {
+    currentOpenMacro = macroKey;
+    document.getElementById('macroBoxGrid').style.display = 'none';
+    document.getElementById('boxDetailView').style.display = 'block';
+
+    const titles = { alimenti: '🍎 Alimenti', detersivi: '🧹 Detersivi', igiene: '🧴 Igiene', casa: '🏠 Casa' };
+    document.getElementById('boxViewTitle').innerText = titles[macroKey] || 'Macro Box';
+
+    // Popola tendina sotto-categorie per nuovo elemento
+    const subSelect = document.getElementById('newBoxSubCategorySelect');
+    subSelect.innerHTML = '';
+    const subCats = Object.keys(catalog[macroKey] || {});
+    subCats.forEach(sc => {
+      const opt = document.createElement('option');
+      opt.value = sc; opt.innerText = sc;
+      subSelect.appendChild(opt);
+    });
+
+    renderBoxCatalogList();
+  }
+
+  function closeBoxView() {
+    currentOpenMacro = null;
+    document.getElementById('boxDetailView').style.display = 'none';
+    document.getElementById('macroBoxGrid').style.display = 'grid';
+    renderBadges();
+  }
+
+  function renderBoxCatalogList() {
+    if (!currentOpenMacro) return;
+    const container = document.getElementById('boxCatalogList');
+    container.innerHTML = '';
+
+    const subCats = catalog[currentOpenMacro] || {};
+
+    Object.keys(subCats).forEach(subCat => {
+      const itemsArr = subCats[subCat];
+      const acc = document.createElement('div');
+      acc.className = 'accordion-item';
+
+      let itemsHtml = '';
+      itemsArr.forEach(itemName => {
+        const cartItem = activeCart.find(c => c.name === itemName && c.macro === currentOpenMacro);
+        const inCartQty = cartItem ? cartItem.qty : 1;
+        const isAdded = !!cartItem;
+
+        itemsHtml += `
+          <li class="item-row">
+            <span style="font-size:0.88rem; font-weight:600; flex:1;">${itemName}</span>
+            <div class="qty-controls">
+              <button class="qty-btn" onclick="adjustCatalogQty('${itemName}', -1)">-</button>
+              <span class="qty-val" id="qty-${cleanId(itemName)}">${inCartQty}</span>
+              <button class="qty-btn" onclick="adjustCatalogQty('${itemName}', 1)">+</button>
+            </div>
+            <button class="btn-add-cart ${isAdded ? 'added' : ''}" onclick="toggleAddToCart('${itemName}', '${subCat}')">
+              ${isAdded ? '✓ In Lista' : '+ Metti nel carrello'}
+            </button>
+          </li>
+        `;
+      });
+
+      acc.innerHTML = `
+        <div class="accordion-header" onclick="toggleAccordionContent(this)">
+          <span>${subCat} (${itemsArr.length})</span>
+          <span>▲</span>
+        </div>
+        <div class="accordion-content">
+          <ul>${itemsHtml}</ul>
+        </div>
+      `;
+      container.appendChild(acc);
+    });
+  }
+
+  function cleanId(str) { return str.replace(/[^a-zA-Z0-9]/g, '_'); }
+
+  function adjustCatalogQty(itemName, delta) {
+    const qtySpan = document.getElementById(`qty-${cleanId(itemName)}`);
+    let current = parseInt(qtySpan.innerText) || 1;
+    current += delta;
+    if (current < 1) current = 1;
+    qtySpan.innerText = current;
+
+    // Se l'elemento è già nel carrello, aggiorna la quantità direttamente
+    const cartItem = activeCart.find(c => c.name === itemName && c.macro === currentOpenMacro);
+    if (cartItem) {
+      cartItem.qty = current;
+      saveData();
+    }
+  }
+
+  function toggleAddToCart(itemName, subCat) {
+    const qtySpan = document.getElementById(`qty-${cleanId(itemName)}`);
+    const qty = parseInt(qtySpan.innerText) || 1;
+
+    const existingIdx = activeCart.findIndex(c => c.name === itemName && c.macro === currentOpenMacro);
+    if (existingIdx >= 0) {
+      activeCart.splice(existingIdx, 1);
+    } else {
+      activeCart.push({
+        id: Date.now() + Math.random(),
+        name: itemName,
+        macro: currentOpenMacro,
+        subCat: subCat,
+        qty: qty,
+        completed: false
+      });
+    }
+    saveData();
+    renderBoxCatalogList();
+  }
+
+  function addNewItemToCatalog() {
+    const textInput = document.getElementById('newBoxItemText');
+    const subCatSelect = document.getElementById('newBoxSubCategorySelect');
+    const val = textInput.value.trim();
+    const subCat = subCatSelect.value;
+
+    if (val && currentOpenMacro && subCat) {
+      if (!catalog[currentOpenMacro][subCat].includes(val)) {
+        catalog[currentOpenMacro][subCat].push(val);
+        textInput.value = '';
+        saveData();
+        renderBoxCatalogList();
+      }
+    }
+  }
+
+  // --- TAB LISTA SPESA (SOLA CONSULTAZIONE A FISARMONICA) ---
+  function renderActiveList() {
+    const container = document.getElementById('activeShoppingList');
+    container.innerHTML = '';
+
+    if (activeCart.length === 0) {
+      container.innerHTML = '<p style="text-align:center; color:var(--secondary); font-size:0.9rem; padding:20px;">Nessun elemento selezionato. Vai nella tab <b>Crea Spesa</b> per aggiungere i prodotti.</p>';
+      return;
+    }
+
+    // Raggruppa per Sotto-categoria
+    const grouped = {};
+    activeCart.forEach(item => {
+      if (!grouped[item.subCat]) grouped[item.subCat] = [];
+      grouped[item.subCat].push(item);
+    });
+
+    Object.keys(grouped).forEach(subCat => {
+      const itemsArr = grouped[subCat];
+      const acc = document.createElement('div');
+      acc.className = 'accordion-item';
+
+      let rowsHtml = '';
+      itemsArr.forEach(item => {
+        rowsHtml += `
+          <li class="item-row">
+            <label style="display:flex; align-items:center; gap:8px; flex:1; cursor:pointer;">
+              <input type="checkbox" ${item.completed ? 'checked' : ''} onchange="toggleItemCompleted(${item.id})">
+              <span style="${item.completed ? 'text-decoration:line-through; color:var(--secondary);' : 'font-weight:600;'}">${item.name}</span>
+            </label>
+            <span style="font-size:0.85rem; font-weight:700; background:#e2e8f0; padding:2px 6px; border-radius:4px;">x${item.qty}</span>
+            <button class="icon-btn delete-btn" onclick="removeFromCart(${item.id})">&times;</button>
+          </li>
+        `;
+      });
+
+      acc.innerHTML = `
+        <div class="accordion-header" onclick="toggleAccordionContent(this)">
+          <span>${subCat} (${itemsArr.length})</span>
+          <span>▲</span>
+        </div>
+        <div class="accordion-content">
+          <ul>${rowsHtml}</ul>
+        </div>
+      `;
+      container.appendChild(acc);
+    });
+  }
+
+  function toggleAccordionContent(headerEl) {
+    const content = headerEl.nextElementSibling;
+    const arrow = headerEl.querySelector('span:last-child');
+    if (content.classList.contains('collapsed')) {
+      content.classList.remove('collapsed');
+      arrow.innerText = '▲';
+    } else {
+      content.classList.add('collapsed');
+      arrow.innerText = '▼';
+    }
+  }
+
+  function toggleItemCompleted(id) {
+    const item = activeCart.find(c => c.id === id);
+    if (item) { item.completed = !item.completed; saveData(); }
+  }
+
+  function removeFromCart(id) {
+    activeCart = activeCart.filter(c => c.id !== id);
+    saveData();
+  }
+
+  // --- CHIUDI SPESA & STORICO ---
+  function openCheckoutModal() {
+    if (activeCart.length === 0) {
+      alert("Nessun articolo presente nella lista della spesa.");
+      return;
+    }
+    document.getElementById('checkoutAmount').value = '';
+    document.getElementById('checkoutModal').style.display = 'flex';
+  }
+
+  function confirmCheckout() {
+    const amountVal = parseFloat(document.getElementById('checkoutAmount').value);
+    const storeVal = document.getElementById('checkoutStoreSelect').value;
+    const transferCheck = document.getElementById('transferToExpiryCheck').checked;
+
+    if (isNaN(amountVal) || amountVal < 0) {
+      alert("Inserisci un importo spesa valido.");
+      return;
+    }
+
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('it-IT') + ' ' + now.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+
+    // Salva nello storico
+    historyList.unshift({
+      id: Date.now(),
+      date: dateStr,
+      amount: amountVal,
+      store: storeVal,
+      items: activeCart.map(i => ({ name: i.name, qty: i.qty, subCat: i.subCat }))
+    });
+
+    // Opzionale: Sposta articoli freschi in dispensa
+    if (transferCheck) {
+      const defaultFutureDate = new Date();
+      defaultFutureDate.setDate(defaultFutureDate.getDate() + 5);
+      const isoDate = defaultFutureDate.toISOString().split('T')[0];
+
+      activeCart.forEach(i => {
+        expiryList.push({
+          id: Date.now() + Math.random(),
+          name: i.name,
+          subCat: i.subCat,
+          date: isoDate
+        });
+      });
+    }
+
+    // Reset carrello attivo
+    activeCart = [];
+    closeModal('checkoutModal');
+    saveData();
+    switchTab('historyTab', document.querySelectorAll('.tab-btn')[3]);
+  }
+
+  function renderHistory() {
+    const container = document.getElementById('historyList');
+    container.innerHTML = '';
+    let grandTotal = 0;
+
+    historyList.forEach(h => {
+      grandTotal += h.amount;
+      const card = document.createElement('div');
+      card.className = 'history-card';
+
+      let itemsSummary = h.items ? h.items.map(i => `• ${i.name} (x${i.qty})`).join('<br>') : 'Nessun dettaglio';
+
+      card.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+          <div>
+            <span class="badge badge-store">${h.store || 'Supermercato'}</span>
+            <div style="font-weight:800; font-size:1.15rem; margin-top:2px;">${h.amount.toFixed(2)} €</div>
+            <div style="font-size:0.75rem; color:var(--secondary);">${h.date}</div>
+          </div>
+          <button class="icon-btn delete-btn" onclick="deleteHistoryItem(${h.id})">&times;</button>
+        </div>
+        <div style="margin-top:8px; padding-top:8px; border-top:1px dashed var(--border); font-size:0.8rem; color:var(--secondary);">
+          ${itemsSummary}
+        </div>
+      `;
+      container.appendChild(card);
+    });
+
+    document.getElementById('totalSpent').innerText = grandTotal.toFixed(2) + ' €';
+  }
+
+  function deleteHistoryItem(id) {
+    if (confirm("Eliminare questa spesa dallo storico?")) {
+      historyList = historyList.filter(h => h.id !== id);
+      saveData();
+    }
+  }
+
+  // --- SCADENZE & OCR FOTOCAMERA ---
+  function handleOCRCameraUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const statusDiv = document.getElementById('ocrStatus');
+    statusDiv.innerText = "Analisi OCR in corso...";
+
+    Tesseract.recognize(file, 'ita', { logger: m => console.log(m) })
+      .then(({ data: { text } }) => {
+        statusDiv.innerText = "Analisi completata!";
+        const extractedDate = parseDateFromOCRText(text);
+        
+        document.getElementById('expiryItemName').value = "";
+        document.getElementById('expiryItemSubCat').value = "Freschi";
+        if (extractedDate) {
+          document.getElementById('expiryItemDate').value = extractedDate;
+          alert(`Data trovata tramite OCR: ${extractedDate}`);
+        } else {
+          const defaultDate = new Date();
+          defaultDate.setDate(defaultDate.getDate() + 3);
+          document.getElementById('expiryItemDate').value = defaultDate.toISOString().split('T')[0];
+          alert("Data non rilevata chiaramente. Inserita data stimata (+3 giorni).");
+        }
+        document.getElementById('expiryModal').style.display = 'flex';
+      })
+      .catch(() => {
+        statusDiv.innerText = "Errore OCR. Inserimento manuale.";
+        openManualExpiryModal();
+      });
+  }
+
+  function parseDateFromOCRText(text) {
+    // Pattern tipici date: DD/MM/YYYY, DD.MM.YY, DD-MM-YYYY
+    const reg = /\b(0[1-9]|[12][0-9]|3[01])[\/\.\-](0[1-9]|1[012])[\/\.\-](20\d\d|\d\d)\b/;
+    const match = text.match(reg);
+    if (match) {
+      let day = match[1];
+      let month = match[2];
+      let year = match[3];
+      if (year.length === 2) year = "20" + year;
+      return `${year}-${month}-${day}`;
+    }
+    return null;
+  }
+
+  function openManualExpiryModal() {
+    document.getElementById('expiryItemName').value = '';
+    document.getElementById('expiryItemSubCat').value = 'Generale';
+    const future = new Date();
+    future.setDate(future.getDate() + 4);
+    document.getElementById('expiryItemDate').value = future.toISOString().split('T')[0];
+    document.getElementById('expiryModal').style.display = 'flex';
+  }
+
+  function saveExpiryItem() {
+    const name = document.getElementById('expiryItemName').value.trim();
+    const subCat = document.getElementById('expiryItemSubCat').value.trim() || 'Generale';
+    const date = document.getElementById('expiryItemDate').value;
+
+    if (name && date) {
+      expiryList.push({ id: Date.now(), name, subCat, date });
+      closeModal('expiryModal');
+      saveData();
+    }
+  }
+
+  function renderExpiryList() {
+    const container = document.getElementById('expiryList');
+    container.innerHTML = '';
+
+    const today = new Date();
+    today.setHours(0,0,0,0);
+
+    expiryList.sort((a,b) => new Date(a.date) - new Date(b.date));
+
+    if (expiryList.length === 0) {
+      container.innerHTML = '<p style="text-align:center; color:var(--secondary); font-size:0.85rem;">Nessun prodotto in dispensa.</p>';
+      return;
+    }
+
+    expiryList.forEach((exp) => {
+      const expDate = new Date(exp.date);
+      expDate.setHours(0,0,0,0);
+      const diffDays = Math.ceil((expDate - today) / (1000 * 60 * 60 * 24));
+
+      let statusClass = "safe";
+      let badgeText = `Scade tra ${diffDays} gg`;
+      let badgeClass = "badge-safe";
+
+      if (diffDays < 0) { statusClass = "expired"; badgeText = "SCADUTO"; badgeClass = "badge-expired"; }
+      else if (diffDays === 0) { statusClass = "expired"; badgeText = "Scade OGGI"; badgeClass = "badge-expired"; }
+      else if (diffDays <= 3) { statusClass = "urgent"; badgeText = `Scade tra ${diffDays} gg!`; badgeClass = "badge-urgent"; }
+
+      const card = document.createElement('div');
+      card.className = `expiry-card ${statusClass}`;
+      card.innerHTML = `
+        <div>
+          <h4 style="margin:0 0 2px 0; font-size:0.95rem;">${exp.name}</h4>
+          <div style="font-size:0.75rem; color:var(--secondary);">${exp.subCat} - Scadenza: ${expDate.toLocaleDateString('it-IT')}</div>
+          <span class="badge ${badgeClass}">${badgeText}</span>
+        </div>
+        <button class="icon-btn delete-btn" onclick="deleteExpiryItem(${exp.id})">&times;</button>
+      `;
+      container.appendChild(card);
+    });
+  }
+
+  function deleteExpiryItem(id) {
+    expiryList = expiryList.filter(e => e.id !== id);
+    saveData();
+  }
+
+  // --- IMPOSTAZIONI CATEGORIE ---
+  function renderSettingsTree() {
+    const container = document.getElementById('settingsTreeContainer');
+    container.innerHTML = '';
+
+    Object.keys(catalog).forEach(macroKey => {
+      const macroTitle = macroKey.toUpperCase();
+      const subObj = catalog[macroKey];
+
+      const acc = document.createElement('div');
+      acc.className = 'accordion-item';
+
+      let subListHtml = '';
+      Object.keys(subObj).forEach(subCat => {
+        subListHtml += `
+          <li class="item-row">
+            <span>${subCat} (${subObj[subCat].length} art.)</span>
+            <button class="icon-btn delete-btn" onclick="deleteSubCategory('${macroKey}', '${subCat}')">&times;</button>
+          </li>
+        `;
+      });
+
+      acc.innerHTML = `
+        <div class="accordion-header" onclick="toggleAccordionContent(this)">
+          <span>📁 Macro: ${macroTitle}</span>
+          <span>▲</span>
+        </div>
+        <div class="accordion-content">
+          <ul style="margin-bottom:8px;">${subListHtml}</ul>
+          <button class="btn-secondary" style="width:100%;" onclick="addNewSubCategory('${macroKey}')">+ Nuova Sotto-categoria</button>
+        </div>
+      `;
+      container.appendChild(acc);
+    });
+  }
+
+  function addNewSubCategory(macroKey) {
+    const name = prompt(`Inserisci il nome della nuova sotto-categoria per ${macroKey.toUpperCase()}:`);
+    if (name && name.trim()) {
+      if (!catalog[macroKey][name.trim()]) {
+        catalog[macroKey][name.trim()] = [];
+        saveData();
+      }
+    }
+  }
+
+  function deleteSubCategory(macroKey, subCat) {
+    if (confirm(`Eliminare la sotto-categoria "${subCat}"?`)) {
+      delete catalog[macroKey][subCat];
+      saveData();
+    }
+  }
+
+  // --- BADGES & RENDER GENERALE ---
+  function renderBadges() {
+    ['alimenti', 'detersivi', 'igiene', 'casa'].forEach(macro => {
+      const count = activeCart.filter(c => c.macro === macro).length;
+      const b = document.getElementById(`badge-${macro}`);
+      if (b) {
+        b.innerText = `${count} scelti`;
+        if (count > 0) b.classList.remove('empty');
+        else b.classList.add('empty');
+      }
+    });
+
+    const totalCartCount = activeCart.length;
+    document.getElementById('cartCountBadge').innerText = `(${totalCartCount})`;
+  }
+
+  function closeModal(modalId) { document.getElementById(modalId).style.display = 'none'; }
+
+  function exportData() {
+    const data = { catalog, activeCart, historyList, expiryList };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.click ? URL.createObjectURL(blob) : '#';
+    a.download = "backup_spesa_smart.json";
+    a.click();
+  }
+
+  function importData() { document.getElementById('importFileInput').click(); }
+
+  function handleFileImport(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+      try {
+        const d = JSON.parse(evt.target.result);
+        if (d.catalog) catalog = d.catalog;
+        if (d.activeCart) activeCart = d.activeCart;
+        if (d.historyList) historyList = d.historyList;
+        if (d.expiryList) expiryList = d.expiryList;
+        saveData();
+        alert("Dati ripristinati con successo!");
+      } catch (err) { alert("File di backup non valido."); }
+    };
+    reader.readAsText(file);
+  }
+
+  function renderAll() {
+    renderBadges();
+    renderActiveList();
+    renderHistory();
+    renderExpiryList();
+    renderSettingsTree();
+    if (currentOpenMacro) renderBoxCatalogList();
+  }
+
+  renderAll();
+</script>
+
+</body>
+</html>
