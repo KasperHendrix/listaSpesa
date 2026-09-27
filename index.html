@@ -1137,7 +1137,7 @@
 
     document.getElementById('totalSpent').innerText = grandTotal.toFixed(2) + ' €';
   }
-
+  
   function openEditHistoryModal(id) {
     const item = historyList.find(h => h.id === id);
     if (!item) return;
@@ -1169,7 +1169,7 @@
     }
   }
 
-  // --- SCADENZE & OCR FOTOCAMERA (OTTIMIZZATO) ---
+  // --- SCADENZE & OCR FOTOCAMERA (OTTIMIZZATO DOT-MATRIX) ---
   function handleOCRCameraUpload(event) {
     const file = event.target.files[0];
     if (!file) return;
@@ -1177,14 +1177,14 @@
     // Mostra il dialog di caricamento grande a tutto schermo
     document.getElementById('ocrLoadingModal').style.display = 'flex';
 
-    // Configuriamo Tesseract per cercare solo numeri, lettere dei mesi e separatori
-    Tesseract.recognize(file, 'ita+eng', {
+    // Whitelist stretta: forza Tesseract a leggere solo numeri e separatori di data
+    Tesseract.recognize(file, 'eng', {
       logger: m => console.log(m),
-      tessedit_char_whitelist: '0123456789/.- ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
+      tessedit_char_whitelist: '0123456789/.- '
     })
       .then(({ data: { text } }) => {
         closeModal('ocrLoadingModal');
-        console.log("Testo grezzo OCR rilevato:", text); // Utile per il debug in console
+        console.log("Testo grezzo OCR (Dot-matrix):", text);
         
         const extractedDate = parseDateFromOCRText(text);
         
@@ -1211,10 +1211,10 @@
   function parseDateFromOCRText(text) {
     if (!text) return null;
 
-    // Normalizziamo il testo (tutto maiuscolo, spazi puliti)
-    const cleanText = text.toUpperCase().replace(/\s+/g, ' ');
+    // Rimuove caratteri non pertinenti mantenendo cifre e separatori
+    const cleanText = text.replace(/[^0-9\/\.\-\s]/g, ' ').replace(/\s+/g, ' ');
 
-    // 1. PATTERN NUMERICO FLESSIBILE (Es: 28/10/2026, 28.10.26, 28 10 26, 28-10-2026)
+    // 1. PATTERN STANDARD (Es: 28/10/2026, 28.10.26, 28 10 26)
     const numReg = /\b(0?[1-9]|[12][0-9]|3[01])[\/\.\-\s]+(0?[1-9]|1[012])[\/\.\-\s]+(20\d\d|\d\d)\b/;
     const matchNum = cleanText.match(numReg);
 
@@ -1226,40 +1226,19 @@
       return `${year}-${month}-${day}`;
     }
 
-    // 2. PATTERN CON MESE IN LETTERE (Es: 28 OTT 2026, 15 OCT 26, 04 MAGGIO 2026)
-    const monthsMap = {
-      'GEN': '01', 'JAN': '01', 'GENNAIO': '01', 'JANUARY': '01',
-      'FEB': '02', 'FEBBRAIO': '02', 'FEBRUARY': '02',
-      'MAR': '03', 'MARZO': '03', 'MARCH': '03',
-      'APR': '04', 'APRILE': '04', 'APRIL': '04',
-      'MAG': '05', 'MAY': '05', 'MAGGIO': '05',
-      'GIU': '06', 'JUN': '06', 'GIUGNO': '06', 'JUNE': '06',
-      'LUG': '07', 'JUL': '07', 'LUGLIO': '07', 'JULY': '07',
-      'AGO': '08', 'AUG': '08', 'AGOSTO': '08', 'AUGUST': '08',
-      'SET': '09', 'SEP': '09', 'SETTEMBRE': '09', 'SEPTEMBER': '09',
-      'OTT': '10', 'OCT': '10', 'OTTOBRE': '10', 'OCTOBER': '10',
-      'NOV': '11', 'NOVEMBRE': '11', 'NOVEMBER': '11',
-      'DIC': '12', 'DEC': '12', 'DICEMBRE': '12', 'DECEMBER': '12'
-    };
+    // 2. FALLBACK PER TIMBRI COMPATTI SENZA SEPARATORI (Es: 281026 o 28102026)
+    const compactReg = /\b(0[1-9]|[12][0-9]|3[01])(0[1-9]|1[012])(20\d\d|\d\d)\b/;
+    const matchCompact = cleanText.replace(/\s+/g, '').match(compactReg);
 
-    const textReg = /\b(0?[1-9]|[12][0-9]|3[01])[\/\.\-\s]+([A-Z]{3,9})[\/\.\-\s]+(20\d\d|\d\d)\b/;
-    const matchText = cleanText.match(textReg);
-
-    if (matchText) {
-      let day = matchText[1].padStart(2, '0');
-      let monthStr = matchText[2];
-      let year = matchText[3];
+    if (matchCompact) {
+      let day = matchCompact[1];
+      let month = matchCompact[2];
+      let year = matchCompact[3];
       if (year.length === 2) year = "20" + year;
-
-      // Cerca la corrispondenza del mese nel dizionario
-      for (let key in monthsMap) {
-        if (monthStr.startsWith(key)) {
-          return `${year}-${monthsMap[key]}-${day}`;
-        }
-      }
+      return `${year}-${month}-${day}`;
     }
 
-    return null; // Se non trova alcuna corrispondenza valida
+    return null;
   }
 
   function openManualExpiryModal() {
