@@ -1169,43 +1169,71 @@
     }
   }
 
-  // --- SCADENZE & OCR FOTOCAMERA (OTTIMIZZATO DOT-MATRIX) ---
-  function handleOCRCameraUpload(event) {
+  // --- SCADENZE & OCR FOTOCAMERA VELOCIZZATO ---
+  async function handleOCRCameraUpload(event) {
     const file = event.target.files[0];
     if (!file) return;
 
-    // Mostra il dialog di caricamento grande a tutto schermo
     document.getElementById('ocrLoadingModal').style.display = 'flex';
 
-    // Whitelist stretta: forza Tesseract a leggere solo numeri e separatori di data
-    Tesseract.recognize(file, 'eng', {
-      logger: m => console.log(m),
-      tessedit_char_whitelist: '0123456789/.- '
-    })
-      .then(({ data: { text } }) => {
-        closeModal('ocrLoadingModal');
-        console.log("Testo grezzo OCR (Dot-matrix):", text);
-        
-        const extractedDate = parseDateFromOCRText(text);
-        
-        document.getElementById('expiryItemName').value = "";
-        document.getElementById('expiryItemSubCat').value = "Freschi";
-        if (extractedDate) {
-          document.getElementById('expiryItemDate').value = extractedDate;
-          alert(`Data trovata tramite OCR: ${extractedDate}`);
-        } else {
-          const defaultDate = new Date();
-          defaultDate.setDate(defaultDate.getDate() + 3);
-          document.getElementById('expiryItemDate').value = defaultDate.toISOString().split('T')[0];
-          alert("Data non rilevata chiaramente. Inserita data stimata (+3 giorni).");
-        }
-        document.getElementById('expiryModal').style.display = 'flex';
-      })
-      .catch((err) => {
-        console.error(err);
-        closeModal('ocrLoadingModal');
-        openManualExpiryModal();
+    try {
+      // 1. Ridimensionamento veloce dell'immagine tramite Canvas per ridurre i Megapixel
+      const resizedBlob = await resizeImageForOCR(file, 1000);
+
+      // 2. OCR su immagine alleggerita
+      const { data: { text } } = await Tesseract.recognize(resizedBlob, 'eng', {
+        logger: m => console.log(m),
+        tessedit_char_whitelist: '0123456789/.- '
       });
+
+      closeModal('ocrLoadingModal');
+      console.log("Testo OCR (Fast):", text);
+
+      const extractedDate = parseDateFromOCRText(text);
+
+      document.getElementById('expiryItemName').value = "";
+      document.getElementById('expiryItemSubCat').value = "Freschi";
+      if (extractedDate) {
+        document.getElementById('expiryItemDate').value = extractedDate;
+        alert(`Data trovata tramite OCR: ${extractedDate}`);
+      } else {
+        const defaultDate = new Date();
+        defaultDate.setDate(defaultDate.getDate() + 3);
+        document.getElementById('expiryItemDate').value = defaultDate.toISOString().split('T')[0];
+        alert("Data non rilevata chiaramente. Inserita data stimata (+3 giorni).");
+      }
+      document.getElementById('expiryModal').style.display = 'flex';
+
+    } catch (err) {
+      console.error(err);
+      closeModal('ocrLoadingModal');
+      openManualExpiryModal();
+    }
+  }
+
+  // Funzione helper per ridimensionare l'immagine e velocizzare l'OCR
+  function resizeImageForOCR(file, maxWidth) {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.src = URL.createObjectURL(file);
+      img.onload = () => {
+        let width = img.width;
+        let height = img.height;
+
+        if (width > maxWidth) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+
+        canvas.toBlob((blob) => resolve(blob), 'image/jpeg', 0.85);
+      };
+    });
   }
 
   function parseDateFromOCRText(text) {
